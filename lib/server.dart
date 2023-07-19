@@ -22,11 +22,13 @@ class FSDServer {
         replyCount++;
       });
     }
-    print('\nfinished spawning tribbles in: ${elapsedMs(startTime)}ms');
+    print('\nfinished spawning ${Tribble.tribbleCount} tribbles in: ${elapsedMs(startTime)}ms');
     while (replyCount != isoCount) {
       await Future<void>.delayed(Duration(microseconds: 10));
     }
-    print('received replies in: ${elapsedMs(startTime)}ms');
+    await Future<void>.delayed(Duration(seconds: 10));
+
+    print('[${Tribble.tribbleCount}] received replies in: ${elapsedMs(startTime)}ms');
     printMemUsage();
     exit(0);
   }
@@ -44,13 +46,14 @@ Future<Tribble> createTribble() async {
 }
 
 Future<void> hi(ConnectFn connect, ReplyFn reply) async {
-  connect().listen((message) {
+  final s = connect();
+  s.listen((message) async {
     final res = calculate();
     reply(res);
+
+    await Future<void>.delayed(Duration(seconds: 3));
+    s.close();
   });
-  while (true) {
-    await Future<void>.delayed(Duration(milliseconds: 100));
-  }
 }
 
 int calculate() {
