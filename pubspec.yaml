@@ -2,13 +2,14 @@ name: server
 description: A sample command-line application.
 version: 1.0.0
 # repository: https://github.com/my_org/my_repo
+publish_to: none
 
 environment:
   sdk: ^3.0.5
 
 dependencies:
   filesize: ^2.0.1
-  tribbles: ^0.2.0
+  tribbles: ^1.0.1
 
 dev_dependencies:
   lints: ^2.0.0

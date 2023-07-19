@@ -333,10 +333,10 @@ packages:
     dependency: "direct main"
     description:
       name: tribbles
-      sha256: "19dc9e6e468ff840c23d37c8a77c21c0c6fa31a7c7d50ae69619660f5cd83549"
+      sha256: f49aac2e6fff2eadeeb37aa21e6dd5e8693bfffbfd29f77c9bb87b01daa6b566
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.0"
+    version: "1.0.1"
   typed_data:
     dependency: transitive
     description:
