@@ -23,14 +23,17 @@ void repl(LuaState ls) {
       final res = loadLineAsExpression(ls, input);
       if (res) {
         // if load was ok, run the loaded string
-        status = ls.pCall(0, 0, 1);
-        if (status != ThreadStatus.lua_ok) {
-          print("error calling expression: status");
+        try {
+          status = ls.pCall(0, 0, 1);
+          if (status != ThreadStatus.lua_ok) {
+            print("error calling expression: status");
+          }
+          continue;
+        } catch (e, _) {
+          print(e);
         }
-        continue;
       } else {
         ls.pop(-1); // get rid of prev loaded line
-
         try {
           ls.loadString(input); // now try again without the 'return' prefix
           final result2 = ls.pCall(0, 0, 0);
