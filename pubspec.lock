@@ -153,6 +153,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.0"
+  lua_dardo:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: main
+      resolved-ref: "7b54c0cfb14420b7390bb8d57b697d2605a86542"
+      url: "https://github.com/maks/LuaDardo"
+    source: git
+    version: "0.0.4"
   matcher:
     dependency: transitive
     description:
@@ -273,6 +282,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.10.0"
+  sprintf:
+    dependency: transitive
+    description:
+      name: sprintf
+      sha256: ec76d38910b6f1c854ce1353c62d37e7ef82b53dc5ab048c25400d35970776d1
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.2"
   stack_trace:
     dependency: transitive
     description:

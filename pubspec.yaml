@@ -10,6 +10,10 @@ environment:
 dependencies:
   filesize: ^2.0.1
   tribbles: ^1.0.1
+  lua_dardo: #^0.0.4
+    git:
+      url: https://github.com/maks/LuaDardo
+      ref: main
 
 dev_dependencies:
   lints: ^2.0.0
