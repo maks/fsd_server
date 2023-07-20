@@ -11,13 +11,16 @@ void main(List<String> args) {
 
   stdout.write('LuaDardo 0.0.4 (Lua 5.3) Ctrl-d to exit\n');
 
-  repl(state);
+  repl(state, () => stdin.readLineSync());
 }
 
-void repl(LuaState ls) {
+/// Function called to supply each user input line in the "read" part of the Lua REPL
+typedef LuaReplReadInput = String? Function();
+
+void repl(LuaState ls, LuaReplReadInput readInput) {
   while (true) {
     stdout.write('> ');
-    final input = stdin.readLineSync();
+    final input = readInput();
     if (input != null) {
       late final ThreadStatus? status;
       final res = loadLineAsExpression(ls, input);
