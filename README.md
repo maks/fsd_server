@@ -37,7 +37,8 @@ https://github.com/dart-lang/sdk/issues/52977
 VM service does not hot reload non-main Isolates (Fixed)
 https://github.com/dart-lang/sdk/issues/44640
 
-
 dartaotruntime help shows --observe but it does not work (Open)
 https://github.com/dart-lang/sdk/issues/44651#issuecomment-1626889446
 
+need for prem-emptive scheduling for large numbers of Isolates
+https://github.com/dart-lang/sdk/issues/46752#issuecomment-1621314275

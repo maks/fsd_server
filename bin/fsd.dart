@@ -1,32 +1,30 @@
 // import 'package:server/test_server.dart';
 import 'dart:io';
 
-import 'package:petit_httpd/petit_httpd.dart';
-import 'package:server/websocket_server.dart';
+import 'package:shelf/shelf_io.dart' as shelf_io;
+import 'package:shelf_static/shelf_static.dart';
+import 'package:shelf_web_socket/shelf_web_socket.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 void main(List<String> arguments) async {
   // final server = FSDServer();
   
-  // start websocket server
-  final server = WSServer();
-  server.start(9090);
+  final wsHandler = webSocketHandler((WebSocketChannel webSocket) {
+    webSocket.stream.listen((message) {
+      print('Received WS message: $message');
+      webSocket.sink.add('You sent: $message');
+    });
+  });
 
-  var petitHTTPD = PetitHTTPD(
-    Directory('admin_app/build/web'),
-    port: 8080,
-    // securePort: 443,
-    bindingAddress: '0.0.0.0',
-    // letsEncryptDirectory: Directory('/etc/letsencrypt/live'),
-    // domains: {
-    //   'fastdart.dev': 'contact@fastdart.dev',
-    // },
-  );
+  // separate port for websockets for now
+  final wsServer = await shelf_io.serve(wsHandler, 'localhost', 9090);
+  print('Serving at ws://${wsServer.address.host}:${wsServer.port}');
 
-  final ok = await petitHTTPD.start();
-  if (!ok) {
-    print('** ERROR Starting: $petitHTTPD');
-    exit(1);
-  }
-
-  print('-- HTTP server listening on localhost:${petitHTTPD.port} docs:${petitHTTPD.documentRoot.path}');
+  final adminAppPath = Directory('admin_app/build/web');
+  final staticHandler = createStaticHandler(adminAppPath.path, defaultDocument: 'index.html');
+  final staticServer = await shelf_io.serve(staticHandler, 'localhost', 8080);
+  // Enable content compression
+  staticServer.autoCompress = true;
+  print('Serving at http://${staticServer.address.host}:${staticServer.port}');
 }
+
