@@ -12,7 +12,7 @@ void main(List<String> arguments) async {
   server.start(9090);
 
   var petitHTTPD = PetitHTTPD(
-    Directory('admin_app'),
+    Directory('admin_app/build/web'),
     port: 8080,
     // securePort: 443,
     bindingAddress: '0.0.0.0',
