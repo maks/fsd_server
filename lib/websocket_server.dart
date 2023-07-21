@@ -19,6 +19,7 @@ class WSServer {
           socket.add('You sent: $message');
         });
       } else {
+        print("forbidden:$request");
         request.response.statusCode = HttpStatus.forbidden;
         request.response.close();
       }

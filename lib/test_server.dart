@@ -4,7 +4,7 @@ import 'package:filesize/filesize.dart';
 import 'package:tribbles/tribbles.dart';
 
 class FSDServer {
-  Future<void> run() async {
+  Future<void> start() async {
     print('Tribble test...');
     printMemUsage();
 
@@ -14,7 +14,7 @@ class FSDServer {
     final startTime = DateTime.now();
     for (var i = 0; i < isoCount; i += 1) {
       final tribble = await createTribble();
-      
+
       tribble.messages.listen((mesg) {
         if (mesg != 42) {
           stdout.write('x:${mesg.runtimeType}');

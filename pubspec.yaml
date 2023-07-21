@@ -1,5 +1,5 @@
 name: server
-description: A sample command-line application.
+description: A highly concurrent WS server built using Isolates Erlang-style
 version: 1.0.0
 # repository: https://github.com/my_org/my_repo
 publish_to: none
@@ -14,6 +14,8 @@ dependencies:
     git:
       url: https://github.com/maks/LuaDardo
       ref: main
+  # temp only for ws client    
+  web_socket_channel: ^2.4.0    
 
 dev_dependencies:
   lints: ^2.0.0
