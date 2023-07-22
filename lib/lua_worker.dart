@@ -15,10 +15,10 @@ class LuaWorker {
     ls.setGlobal('send');
   }
 
-  void run(String request) {
-    ls.pushString(request);
+  void run(String message) {
+    ls.pushString(message);
     // Set variable name
-    ls.setGlobal("req");
+    ls.setGlobal("mesg");
 
     ls.loadString(chunk);
 
@@ -26,10 +26,10 @@ class LuaWorker {
   }
 
   int sendString(LuaState ls) {
-    final mesg = ls.checkString(-1);
+    final reply = ls.checkString(-1);
     ls.pop(-1);
-    if (mesg != null) {
-      sendFn(mesg);
+    if (reply != null) {
+      sendFn(reply);
     }
     return 1;
   }
