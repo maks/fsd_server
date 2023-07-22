@@ -1,6 +1,7 @@
 // import 'package:server/test_server.dart';
 import 'dart:io';
 
+import 'package:server/lua_worker.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_static/shelf_static.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
@@ -12,7 +13,8 @@ void main(List<String> arguments) async {
   final wsHandler = webSocketHandler((WebSocketChannel webSocket) {
     webSocket.stream.listen((message) {
       print('Received WS message: $message');
-      webSocket.sink.add('You sent: $message');
+      final script = File("scripts/worker.lua").readAsStringSync();
+      LuaWorker(chunk: script, sendFn: (m) => webSocket.sink.add(m)).run(message.toString());
     });
   });
 
