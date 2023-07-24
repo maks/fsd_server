@@ -25,6 +25,7 @@ There are currently auxillary tools to aid development and debugging including a
 * [X] Websocket cli client
 * [X] Flutter web admin app served by fsd httpd
 * [X] Consolidate to single Shelf based server
+* [X] Run Lua workers with Tribbles
 * [ ] Websocket admin API
 * [ ] Websocket user API
 * [ ] Flutter web admin app - display stats/graph

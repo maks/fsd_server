@@ -1,6 +1,7 @@
 {
     "Lua.diagnostics.globals": [
         "send",
-        "mesg"
+        "mesg",
+        "wait"
     ]
 }

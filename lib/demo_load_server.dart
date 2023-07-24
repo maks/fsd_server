@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:filesize/filesize.dart';
 import 'package:tribbles/tribbles.dart';
 
-class FSDServer {
+class DemoLoadServer {
   Future<void> start() async {
     print('Tribble test...');
     printMemUsage();

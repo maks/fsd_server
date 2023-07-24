@@ -1,20 +1,22 @@
-// import 'package:server/test_server.dart';
 import 'dart:io';
 
-import 'package:server/lua_worker.dart';
+import 'package:server/tribble_worker.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_static/shelf_static.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 void main(List<String> arguments) async {
-  // final server = FSDServer();
   
   final wsHandler = webSocketHandler((WebSocketChannel webSocket) {
-    webSocket.stream.listen((message) {
-      print('Received WS message: $message');
-      final script = File("scripts/worker.lua").readAsStringSync();
-      LuaWorker(chunk: script, sendFn: (m) => webSocket.sink.add(m)).run(message.toString());
+    webSocket.stream.listen((message) async {
+      // print('Received WS message: $message');
+
+      final tribble = await createTribble(message);
+      tribble.messages.listen((dynamic m) {
+        // messages from the tribble worker get sent straight out to the websocket
+        webSocket.sink.add('$tribble]$m');
+      });
     });
   });
 
