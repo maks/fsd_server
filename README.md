@@ -26,6 +26,7 @@ There are currently auxillary tools to aid development and debugging including a
 * [X] Flutter web admin app served by fsd httpd
 * [X] Consolidate to single Shelf based server
 * [X] Run Lua workers with Tribbles
+* [ ] Basic Named Tribbles registry
 * [ ] Websocket admin API
 * [ ] Websocket user API
 * [ ] Flutter web admin app - display stats/graph
@@ -35,6 +36,7 @@ There are currently auxillary tools to aid development and debugging including a
 ### M2: MVP
 
 * [ ] HTTPS & WSS (using lets encrypt shelf pkg)
+* [ ] Expose "spawn" function to Lua to create & run new Tribbles
 * [ ] User authentication
 * [ ] User authorisation/permissions
 * [ ] SQLite for K-V datastore API over websocket
