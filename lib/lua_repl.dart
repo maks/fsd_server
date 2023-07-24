@@ -24,7 +24,7 @@ class LuaRepl {
           // if load was ok, run the loaded string
           try {
             status = ls.pCall(0, 0, 1);
-            if (status != ThreadStatus.lua_ok) {
+            if (status != ThreadStatus.luaOk) {
               print("error calling expression: status");
             }
             continue;
@@ -36,7 +36,7 @@ class LuaRepl {
           try {
             ls.loadString(input); // now try again without the 'return' prefix
             final result2 = ls.pCall(0, 0, 0);
-            if (result2 != ThreadStatus.lua_ok) {
+            if (result2 != ThreadStatus.luaOk) {
               print("call statement err: $result2");
             }
           } catch (e, _) {
@@ -54,7 +54,7 @@ class LuaRepl {
     bool result = false;
     try {
       status = ls.loadString("return $line\n");
-      if (status != ThreadStatus.lua_ok) {
+      if (status != ThreadStatus.luaOk) {
         debugPrint("error with exp: $status");
       } else {
         result = true;
