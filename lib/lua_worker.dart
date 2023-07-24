@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:lua_dardo/lua.dart';
+import 'package:tribbles/tribbles.dart';
 
 typedef SendToDart = void Function(dynamic s);
 
@@ -8,8 +9,9 @@ class LuaWorker {
   late final LuaState ls;
   final SendToDart sendFn;
   final String chunk;
+  final Map<String, dynamic> data; 
 
-  LuaWorker({required this.chunk, required this.sendFn}) {
+  LuaWorker({required this.chunk, required this.sendFn, required this.data}) {
     ls = LuaState.newState();
 
     ls.openLibs(); // allow all std Lua libs
@@ -18,6 +20,9 @@ class LuaWorker {
 
     ls.pushDartFunction(wait);
     ls.setGlobal('wait');
+
+    ls.pushString(Tribble.currentId);
+    ls.setGlobal('tid');
   }
 
   void run(String message) {

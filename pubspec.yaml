@@ -9,7 +9,7 @@ environment:
 
 dependencies:
   filesize: ^2.0.1
-  tribbles: ^1.0.1
+  tribbles: ^1.0.2
   lua_dardo: ^0.0.5
   # temp only for ws client    
   web_socket_channel: ^2.4.0
