@@ -15,8 +15,8 @@ Future<Tribble> createTribble(dynamic message) async {
 
 Future<void> workerFunction(ConnectFn connect, ReplyFn reply) async {
   final s = connect();
-  s.listen((message) async {
-    final script = File("scripts/worker.lua").readAsStringSync();
+  s.listen((dynamic message) async {
+    final script = File(message as String).readAsStringSync();
     // we give the Lua worker a send function that just immediately sends the data
     // out to the messages stream of this Tribble
     LuaWorker(chunk: script, sendFn: (d) => reply(d), data: {}).run(message.toString());

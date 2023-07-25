@@ -36,6 +36,10 @@ class _MyHomePageState extends State<MyHomePage> {
     Uri.parse('ws://localhost:9090/ws'),
   );
 
+  final _adminChannel = WebSocketChannel.connect(
+    Uri.parse('ws://localhost:9999/ws'),
+  );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,6 +62,12 @@ class _MyHomePageState extends State<MyHomePage> {
               stream: _channel.stream,
               builder: (context, snapshot) {
                 return Text(snapshot.hasData ? '${snapshot.data}' : '');
+              },
+            ),
+            StreamBuilder(
+              stream: _adminChannel.stream,
+              builder: (context, snapshot) {
+                return Text(snapshot.hasData ? 'ADMIN:${snapshot.data}' : '');
               },
             ),
           ],
