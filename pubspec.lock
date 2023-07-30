@@ -33,6 +33,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.11.0"
+  bonsai:
+    dependency: "direct main"
+    description:
+      name: bonsai
+      sha256: "949e5087f5463d8d129f4f3056906cc7bd845fcb4bd8c8d5967e0106d52a2ebf"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   boolean_selector:
     dependency: transitive
     description:
@@ -73,6 +81,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.3"
+  ffi:
+    dependency: transitive
+    description:
+      name: ffi
+      sha256: ed5337a5660c506388a9f012be0288fb38b49020ce2b45fe1f8b8323fe429f99
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.2"
   file:
     dependency: transitive
     description:
@@ -129,6 +145,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.4"
+  isolate_name_server:
+    dependency: "direct main"
+    description:
+      name: isolate_name_server
+      sha256: "0285b6a52517498cbd2f664d44a4827ca5e859e03695a47d73879979c95ded9b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.0"
   js:
     dependency: transitive
     description:
@@ -402,4 +426,4 @@ packages:
     source: hosted
     version: "3.1.2"
 sdks:
-  dart: ">=3.0.5 <4.0.0"
+  dart: ">=3.0.6 <4.0.0"

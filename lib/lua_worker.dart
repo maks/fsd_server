@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:lua_dardo/lua.dart';
 import 'package:tribbles/tribbles.dart';
 
@@ -18,19 +16,18 @@ class LuaWorker {
     ls.pushDartFunction(sendString);
     ls.setGlobal('send');
 
-    ls.pushDartFunction(wait);
-    ls.setGlobal('wait');
-
     ls.pushString(Tribble.currentId);
     ls.setGlobal('tid');
   }
 
-  void run(String message) {
+  void run(String message) async {
     ls.pushString(message);
     // Set variable name
     ls.setGlobal("mesg");
 
     ls.loadString(chunk);
+
+    await Future<void>.delayed(Duration(seconds: 1));
 
     ls.call(0, 0);
   }
@@ -43,20 +40,6 @@ class LuaWorker {
     ls.pop(-1);
     if (reply != null) {
       sendFn(reply);
-    }
-    return 1;
-  }
-
-  /// function exposed to Lua: **SYNCHRONOUS** wait
-  /// This will block execution of Lua AND the hosting Dart Isolate
-  /// for the given number of seconds
-  int wait(LuaState ls) {
-    final seconds = ls.checkInteger(-1);
-    ls.pop(-1);
-    if (seconds != null) {
-      sleep(Duration(seconds: seconds));
-    } else {
-      throw Exception("invalid seconds to wait:$seconds");
     }
     return 1;
   }

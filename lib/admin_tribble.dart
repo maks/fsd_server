@@ -2,10 +2,13 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:server/worker_tribble.dart';
+import 'package:bonsai/bonsai.dart';
+import 'package:server/load_maker.dart';
 import 'package:tribbles/tribbles.dart';
 
-int _completedInLastSecond = 0;
+const logtag = "admin_tribble";
+
+LoadMaker? _load;
 
 Future<Tribble> createAdminTribble(dynamic message) async {
   final tribble = Tribble(adminFunction);
@@ -17,43 +20,36 @@ Future<Tribble> createAdminTribble(dynamic message) async {
 }
 
 Future<void> adminFunction(ConnectFn connect, ReplyFn reply) async {
+  Log.init(true); //need to do init in every new Isolate
   final s = connect();
 
   sendStatus(reply); //dont await! just start the infinite status sending loop
 
   s.listen((message) async {
-    // TODO: listen for admin commands
-    if (message == "start") {
-      print("start load workers");
-      createLoadWorkers(10);
+    if (message is String && message.startsWith("start:")) {
+      Log.d(logtag, "worker start message:$message");
+      final int? count = int.tryParse(message.split(":")[1]);
+      if (count != null) {
+        Log.d(logtag, "starting load worker count:$count");
+        _load ??= LoadMaker();
+        await _load!.startWorkLoad(count);
+      } else {
+        Log.d(logtag, "INVALID worker start message count:$message");
+      }
     }
   });
 }
 
-Future<void> createLoadWorkers(int workerCount) async {
-  for (var i = 0; i < workerCount; i += 1) {
-    final tribble = await createTribble("scripts/load_maker.lua");
-
-    tribble.messages.listen((dynamic mesg) {
-      if (mesg.toString().startsWith("completed:")) {
-        _completedInLastSecond++;
-      }
-    });
-  }
-  print("started $workerCount load workers");
-}
-
 Future<void> sendStatus(ReplyFn reply) async {
   // send status to parent Tribble (Isolate) at 1Hz
-  print("entering status loop");
+  Log.d(logtag, "entering status loop");
   while (true) {
     await Future<void>.delayed(Duration(seconds: 1));
     final status = Status(
-      completionCount: _completedInLastSecond,
+      completionCount: _load?.getAndClearCompletionCount() ?? 0,
       memoryUsage: ProcessInfo.currentRss,
     );
     reply(status.toJson());
-    _completedInLastSecond = 0; //reset counter
   }
 }
 

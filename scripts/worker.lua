@@ -8,6 +8,5 @@ local reply = "lua says: {" .. tid .. "}" .. mesg
 local x = 0
 while x < 10 do
     x=x+1
-    wait(1)
     send("["..x.."]"..reply)
  end
