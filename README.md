@@ -26,7 +26,7 @@ There are currently auxillary tools to aid development and debugging including a
 * [X] Flutter web admin app served by fsd httpd
 * [X] Consolidate to single Shelf based server
 * [X] Run Lua workers with Tribbles
-* [ ] Basic Named Tribbles registry
+* [X] Basic Named SendPort registry
 * [ ] Websocket admin API
 * [ ] Websocket user API
 * [ ] Flutter web admin app - display stats/graph
