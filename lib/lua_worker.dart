@@ -1,5 +1,6 @@
+import 'dart:isolate';
+
 import 'package:lua_dardo/lua.dart';
-import 'package:tribbles/tribbles.dart';
 
 typedef SendToDart = void Function(dynamic s);
 
@@ -16,7 +17,7 @@ class LuaWorker {
     ls.pushDartFunction(sendString);
     ls.setGlobal('send');
 
-    ls.pushString(Tribble.currentId);
+    ls.pushString(Isolate.current.debugName);
     ls.setGlobal('tid');
   }
 
@@ -26,8 +27,6 @@ class LuaWorker {
     ls.setGlobal("mesg");
 
     ls.loadString(chunk);
-
-    await Future<void>.delayed(Duration(seconds: 1));
 
     ls.call(0, 0);
   }

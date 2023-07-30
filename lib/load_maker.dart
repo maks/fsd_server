@@ -29,18 +29,7 @@ class LoadMaker {
 
     final script = File("scripts/load_maker.lua").readAsStringSync();
     for (int i = 0; i < workerCount; i++) {
-      // final tribble = await createLuaWorkerTribble(script, persist: true);
-
-      // tribble.messages.listen((dynamic mesg) {
-      //   if (mesg.toString().startsWith("completed:")) {
-      //     _completionCount++;
-      //     // and just keep looping repeatedly running the worker load script
-      //     tribble.sendMessage(script);
-      //   }
-      // });
-
       // pure dart load using Isolate directly not Tribbles
-      // await createDartIsolateLoad();
       await createLuatIsolateLoad(script);
     }
     log("started $workerCount load workers");

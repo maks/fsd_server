@@ -18,12 +18,14 @@ void dartIsolateWorkerFunction(String data) async {
   } else {
     throw Exception("missing loadmaker Port name");
   }
+  final id = Isolate.current.debugName;
+  
   while (true) {
     int accum = 0;
     for (int i = 0; i < 500; i++) {
       accum = accum + i;
-    }
-    final message = "completed:todo[$accum]";
+    } 
+    final message = "completed:$id[$accum]";
     ins.send(message);
     await Future<void>.delayed(Duration(seconds: 1));
   }
