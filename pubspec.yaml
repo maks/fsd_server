@@ -10,7 +10,8 @@ environment:
 dependencies:
   bonsai: ^1.0.1
   filesize: ^2.0.1
-  tribbles: ^1.0.2
+  tribbles: 
+    path: ../tribbles
   lua_dardo: ^0.0.5
   isolate_name_server: ^1.1.0
   # temp only for ws client    

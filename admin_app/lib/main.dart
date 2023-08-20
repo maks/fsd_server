@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:simple_line_chart/simple_line_chart.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 void main() {
@@ -121,15 +124,87 @@ class _AdminViewState extends State<AdminView> {
     Uri.parse('ws://localhost:9999/ws'),
   );
 
+  final List<DataPoint> _memoryReadings = [];
+  final List<DataPoint> _completionReadings = [];
+
+  late final LineChartData memData;
+  late final LineChartData compsData;
+  int _dataCounter = 0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // create a data model
+    memData = LineChartData(datasets: [
+      Dataset(label: 'Memory', dataPoints: _memoryReadings),
+    ]);
+
+    compsData = LineChartData(datasets: [
+      Dataset(label: 'Completions', dataPoints: _completionReadings),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream: _adminChannel.stream,
       builder: (context, snapshot) {
+        if (snapshot.data != null) {
+          final json = jsonDecode(snapshot.data);
+          final int mem = json["memoryUsage"]; //todo proper typed json parsing
+          final int comps = json["completionCount"]; //todo proper typed json parsing
+          _memoryReadings.add(DataPoint(y: mem.toDouble(), x: (_dataCounter++).toDouble()));
+          if (comps > 0) {
+            _completionReadings.add(DataPoint(y: comps.toDouble(), x: _dataCounter.toDouble()));
+          }
+        }
         return Column(
           children: [
-            const Placeholder(fallbackHeight: 240, fallbackWidth: 320),
-            Text(snapshot.hasData ? 'COMP:${snapshot.data}' : ''),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SizedBox(
+                height: 300,
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 300,
+                      child: LineChart(
+                        style: LineChartStyle.fromTheme(context)
+                            .copyRemoving(
+                          topAxis: true,
+                          rightAxis: true,
+                        )
+                            .copyWith(
+                          datasetStyles: [DatasetStyle(color: Colors.redAccent)],
+                          bottomAxisStyle: LineChartStyle.fromTheme(context).bottomAxisStyle?.copyWith(labelCount: 0),
+                        ),
+                        data: memData,
+                        seriesHeight: 200,
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    SizedBox(
+                      width: 300,
+                      child: LineChart(
+                        style: LineChartStyle.fromTheme(context)
+                            .copyRemoving(
+                              topAxis: true,
+                              rightAxis: true,
+                            )
+                            .copyWith(
+                              bottomAxisStyle:
+                                  LineChartStyle.fromTheme(context).bottomAxisStyle?.copyWith(labelCount: 0),
+                            ),
+                        data: compsData,
+                        seriesHeight: 200,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Text(snapshot.hasData ? 'Data [$_dataCounter]:${snapshot.data}' : 'No Data'),
             Form(
               child: TextFormField(
                 decoration: const InputDecoration(labelText: 'Jobs:'),
@@ -155,3 +230,5 @@ class _AdminViewState extends State<AdminView> {
     super.dispose();
   }
 }
+
+//NumberFormat.compact()

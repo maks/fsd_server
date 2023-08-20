@@ -8,7 +8,7 @@ Future<void> createDartIsolateLoad() async {
   await Isolate.spawn<String>(dartIsolateWorkerFunction, "");
 }
 
-Future<void> createLuatIsolateLoad(String luaChunk) async {
+Future<void> createLuaIsolateLoad(String luaChunk) async {
   await Isolate.spawn<String>(dartIsolateWorkerFunction, luaChunk);
 }
 

@@ -372,10 +372,9 @@ packages:
   tribbles:
     dependency: "direct main"
     description:
-      name: tribbles
-      sha256: "18cef6b5c7e0c963fd2f5c41df2f6bbb9e739785eae68b95699b0e9498533c4b"
-      url: "https://pub.dev"
-    source: hosted
+      path: "../tribbles"
+      relative: true
+    source: path
     version: "1.1.0"
   typed_data:
     dependency: transitive

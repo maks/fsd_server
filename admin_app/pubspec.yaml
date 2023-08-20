@@ -13,7 +13,9 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.2
   web_socket_channel: ^2.4.0
-  charts_flutter: ^0.12.0
+  simple_line_chart: ^1.4.1
+  intl: ^0.17.0
+
 
 dev_dependencies:
   flutter_test:

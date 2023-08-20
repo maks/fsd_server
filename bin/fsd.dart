@@ -31,22 +31,22 @@ void main(List<String> arguments) async {
 
   Tribble? adminTribble;
   final adminWSHandler = webSocketHandler((WebSocketChannel webSocket) async {
+    Log.i(logtag, "new Admin WS connection");
+
     webSocket.stream.listen((message) async {
       Log.d(logtag, 'Received WS message: $message');
       adminTribble?.sendMessage(message);
     });
 
-    if (adminTribble == null) {
-      // for now only start admin Tribble when an admin client connects via websocket
-      adminTribble = await createAdminTribble("start");
+    // create new admin tribble if one doesn't yet exist
+    adminTribble ??= await createAdminTribble("start"); 
 
-      adminTribble!.messages.listen((dynamic m) {
+    adminTribble!.messages.listen((dynamic m) {
         // messages from the admin tribble get sent straight out to the websocket
         // where admin clients are connected
         webSocket.sink.add(m);
         Log.d(logtag, "sent update:$m");
-      });
-    }
+    });
   });
 
   // separate port for "user" websockets for now
