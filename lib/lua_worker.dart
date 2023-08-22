@@ -21,11 +21,21 @@ class LuaWorker {
     ls.setGlobal('tid');
   }
 
-  void run(String message) async {
-    ls.pushString(message);
-    // Set variable name
-    ls.setGlobal("mesg");
-
+  void run() async {
+    for (final d in data.keys) {
+      final val = data[d];
+      if (val is String) {
+        ls.pushString(d);
+      } else if (val is int) {
+        print("lua push int:$d->${data[d]}");
+        ls.pushInteger(val);
+      } else if (val is bool) {
+        ls.pushBoolean(val);
+      }
+      // Set variable name
+      ls.setGlobal(d);
+    }
+   
     ls.loadString(chunk);
 
     ls.call(0, 0);

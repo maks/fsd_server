@@ -1,7 +1,7 @@
 -- dummy load
 local accum = 0
-for i = 1, 500, 1 do
-    accum = accum + 1
+for i = 1, 5000 do
+    accum = accum + i
 end
 send("completed:" .. tid)
 

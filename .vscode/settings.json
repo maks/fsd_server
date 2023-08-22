@@ -3,6 +3,7 @@
         "send",
         "mesg",
         "tid",
-        "print"
+        "print",
+        "input"
     ]
 }

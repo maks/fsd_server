@@ -91,7 +91,21 @@ class _UserViewState extends State<UserView> {
         StreamBuilder(
           stream: _channel.stream,
           builder: (context, snapshot) {
-            return Text(snapshot.hasData ? '${snapshot.data}' : '');
+            if (snapshot.hasData) {
+              final results = jsonDecode(snapshot.data) as List;
+              return SizedBox(
+                height: MediaQuery.of(context).size.height * 0.5,
+                child: ListView.builder(
+                  itemBuilder: (_, i) => Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text("∑(1..${results[i][0]}) = ${results[i][1]}"),
+                  ),
+                  itemCount: results.length,
+                ),
+              );
+            } else {
+              return const Text("no results");
+            }
           },
         ),
       ],
@@ -100,8 +114,8 @@ class _UserViewState extends State<UserView> {
 
   void _sendMessage(String input) {
     if (_controller.text.isNotEmpty) {
-      print("submit:$input");
-      // _channel.sink.add("start:$input");
+      debugPrint("submit:$input");
+      _channel.sink.add(input);
     }
   }
 
@@ -219,7 +233,7 @@ class _AdminViewState extends State<AdminView> {
 
   void _sendAdminMessage(String input) {
     if (input.isNotEmpty) {
-      print("send admin:start:$input");
+      debugPrint("send admin:start:$input");
       _adminChannel.sink.add("start:$input");
     }
   }
@@ -230,5 +244,3 @@ class _AdminViewState extends State<AdminView> {
     super.dispose();
   }
 }
-
-//NumberFormat.compact()
