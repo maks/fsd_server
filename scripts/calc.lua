@@ -1,8 +1,7 @@
 -- input is a int provided by the host
-print("lua got req:")
-print(input)
+-- print("["..tid.."] lua got req:"..input.."\n")
 local accum = 0
 for i = 0, input do
     accum = accum + i
 end
-send(accum)
+send(tid)

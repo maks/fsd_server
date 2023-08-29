@@ -54,11 +54,11 @@ void main(List<String> arguments) async {
       Log.d(logtag, 'Received user WS message: $message');
       final chunk = await File("scripts/calc.lua").readAsString();
       final userReqInput = int.parse(message as String);
-      final LuaRequestData data = (id: _userRequestIdCounter, input: userReqInput, luaChunk: chunk);
+      final LuaRequestData data = (id: _userRequestIdCounter, luaChunk: chunk);
       _userRequestsById[_userRequestIdCounter] = (req: userReqInput, sum: 0);
       _userRequestIdCounter++;
       _socketSinks.add(webSocket.sink);
-      runLuaIsolateJob(data);     
+      runLuaIsolateJob(data, "runLuaIsolateJob");     
     });
   });
 
@@ -78,7 +78,7 @@ void main(List<String> arguments) async {
         // messages from the admin tribble get sent straight out to the websocket
         // where admin clients are connected
         webSocket.sink.add(m);
-        Log.d(logtag, "sent update:$m");
+      // Log.d(logtag, "sent update:$m");
     });
   });
 

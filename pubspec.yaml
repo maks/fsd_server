@@ -12,7 +12,8 @@ dependencies:
   filesize: ^2.0.1
   tribbles: 
     path: ../tribbles
-  lua_dardo: ^0.0.5
+  lua_dardo: #^0.0.5
+    path: ../../LuaDardo
   isolate_name_server: ^1.1.0
   # temp only for ws client    
   web_socket_channel: ^2.4.0

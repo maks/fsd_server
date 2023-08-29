@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:isolate';
 
 import 'package:lua_dardo/lua.dart';
@@ -13,32 +14,35 @@ class LuaWorker {
   LuaWorker({required this.chunk, required this.sendFn, required this.data}) {
     ls = LuaState.newState();
 
-    ls.openLibs(); // allow all std Lua libs
-    ls.pushDartFunction(sendString);
-    ls.setGlobal('send');
+    // ls.openLibs(); // allow all std Lua libs
+
+    ls.register('send', sendString);
+
+    ls.register('sleep', luaSleep);
+    
+    ls.register('dprint', luaPrint);
 
     ls.pushString(Isolate.current.debugName);
     ls.setGlobal('tid');
   }
 
-  void run() async {
-    for (final d in data.keys) {
-      final val = data[d];
-      if (val is String) {
-        ls.pushString(d);
-      } else if (val is int) {
-        print("lua push int:$d->${data[d]}");
-        ls.pushInteger(val);
-      } else if (val is bool) {
-        ls.pushBoolean(val);
-      }
-      // Set variable name
-      ls.setGlobal(d);
-    }
+  Future<void> run() async {
+    // for (final d in data.keys) {
+    //   final val = data[d];
+    //   if (val is String) {
+    //     ls.pushString(d);
+    //   } else if (val is int) {
+    //     ls.pushInteger(val);
+    //   } else if (val is bool) {
+    //     ls.pushBoolean(val);
+    //   }
+    //   // Set variable name
+    //   ls.setGlobal(d);
+    // }
    
     ls.loadString(chunk);
 
-    ls.call(0, 0);
+    await ls.call(0, 0);
   }
 
   /// Function exposed to Lua: allows Lua to send strings to Dart host
@@ -52,4 +56,23 @@ class LuaWorker {
     }
     return 1;
   }
+
+  FutureOr<int> luaSleep(LuaState ls) async {
+    // print("start Dart Sleep for Lua");
+    final delayInMs = ls.checkInteger(1);
+    ls.pop(1);
+    await Future<void>.delayed(Duration(milliseconds: delayInMs ?? 1));
+    // print("end Dart Sleep for Lua");
+    return 1;
+  }
+
+  int luaPrint(LuaState ls) {
+    final val = ls.checkString(1);
+    ls.pop(1);
+
+    print("lprint:$val");
+    return 1;
+  }
+  
 }
+

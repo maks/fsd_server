@@ -23,8 +23,6 @@ class LoadMaker {
   }
 
   Future<void> startWorkLoad(int workerCount) async {
-    _workerCount += workerCount;
-
     // the port that load workers will report back on
     ReceivePort rp = ReceivePort();
     rp.listen((message) {
@@ -36,9 +34,12 @@ class LoadMaker {
     IsolateNameServer.registerPortWithName(rp.sendPort, portName);
 
     final script = File("scripts/load_maker.lua").readAsStringSync();
+    
     for (int i = 0; i < workerCount; i++) {
-      // pure Dart load using Isolate directly not Tribbles
-      await createLuaIsolateLoad(script);
+      final LuaRequestData data = (id: i, luaChunk: script);
+      await runLuaIsolateJob(data, "$i");
+      // await Future.delayed(Duration(milliseconds: 2));
+      _workerCount++;
     }
     log("started $_workerCount load workers");
   }

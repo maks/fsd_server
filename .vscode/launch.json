@@ -5,9 +5,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "fsd",
+            "name": "preempt",
             "request": "launch",
-            "type": "dart"
+            "type": "dart",
+            "program": "bin/preempt_test.dart",
+            "args": ["5555", "1"]
         }
     ]
 }

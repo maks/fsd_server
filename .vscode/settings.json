@@ -4,6 +4,7 @@
         "mesg",
         "tid",
         "print",
-        "input"
+        "input",
+        "sleep"
     ]
 }
