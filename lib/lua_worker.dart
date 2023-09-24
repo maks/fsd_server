@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'dart:async';
 import 'dart:isolate';
 
@@ -15,11 +17,11 @@ class LuaWorker {
     ls = LuaState.newState();
 
     ls.openLibs().then((value) {
-      ls.register('send', sendString);
+      ls.register('send', lua_sendString);
 
-      ls.register('sleep', luaSleep);
+      ls.register('sleep', lua_sleep);
 
-      ls.register('dprint', luaPrint);
+      ls.register('dprint', lua_print);
 
       ls.pushString(Isolate.current.debugName);
       ls.setGlobal('tid');
@@ -49,10 +51,12 @@ class LuaWorker {
     await ls.call(0, 0);
   }
 
+  // ======= Functions exposed to Lua ====================================
+
   /// Function exposed to Lua: allows Lua to send strings to Dart host
   /// which will cause this worker to call the `sendFn` callback function
   /// with the String passed from Lua
-  int sendString(LuaState ls) {
+  int lua_sendString(LuaState ls) {
     final reply = ls.checkString(-1);
     ls.pop(-1);
     if (reply != null) {
@@ -61,7 +65,9 @@ class LuaWorker {
     return 1;
   }
 
-  FutureOr<int> luaSleep(LuaState ls) async {
+  /// Function exposed to Lua: allows Lua to pause for given time but using hosts
+  /// async so as not to block the underlying host thread
+  FutureOr<int> lua_sleep(LuaState ls) async {
     // print("start Dart Sleep for Lua");
     final delayInMs = ls.checkInteger(1);
     ls.pop(1);
@@ -70,11 +76,12 @@ class LuaWorker {
     return 1;
   }
 
-  int luaPrint(LuaState ls) {
+  /// Function exposed to Lua: allows Lua to print to std output
+  int lua_print(LuaState ls) {
     final val = ls.checkString(1);
     ls.pop(1);
 
-    print("lprint:$val");
+    print("[lua] $val");
     return 1;
   }
 }
