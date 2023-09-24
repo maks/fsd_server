@@ -5,6 +5,7 @@
         "tid",
         "print",
         "input",
-        "sleep"
+        "sleep",
+        "sum_to"
     ]
 }

@@ -9,37 +9,41 @@ class LuaWorker {
   late final LuaState ls;
   final SendToDart sendFn;
   final String chunk;
-  final Map<String, dynamic> data; 
+  final _ready = Completer<void>();
 
-  LuaWorker({required this.chunk, required this.sendFn, required this.data}) {
+  LuaWorker({required this.chunk, required this.sendFn}) {
     ls = LuaState.newState();
 
-    // ls.openLibs(); // allow all std Lua libs
+    ls.openLibs().then((value) {
+      ls.register('send', sendString);
 
-    ls.register('send', sendString);
+      ls.register('sleep', luaSleep);
 
-    ls.register('sleep', luaSleep);
-    
-    ls.register('dprint', luaPrint);
+      ls.register('dprint', luaPrint);
 
-    ls.pushString(Isolate.current.debugName);
-    ls.setGlobal('tid');
+      ls.pushString(Isolate.current.debugName);
+      ls.setGlobal('tid');
+
+      _ready.complete();
+    }); // allow all std Lua libs
   }
 
-  Future<void> run() async {
-    // for (final d in data.keys) {
-    //   final val = data[d];
-    //   if (val is String) {
-    //     ls.pushString(d);
-    //   } else if (val is int) {
-    //     ls.pushInteger(val);
-    //   } else if (val is bool) {
-    //     ls.pushBoolean(val);
-    //   }
-    //   // Set variable name
-    //   ls.setGlobal(d);
-    // }
-   
+  Future<void> run(Map<String, dynamic> data) async {
+    await _ready.future;
+
+    for (final d in data.keys) {
+      final val = data[d];
+      if (val is String) {
+        ls.pushString(d);
+      } else if (val is int) {
+        ls.pushInteger(val);
+      } else if (val is bool) {
+        ls.pushBoolean(val);
+      }
+      // Set variable name
+      ls.setGlobal(d);
+    }
+
     ls.loadString(chunk);
 
     await ls.call(0, 0);
@@ -73,6 +77,4 @@ class LuaWorker {
     print("lprint:$val");
     return 1;
   }
-  
 }
-

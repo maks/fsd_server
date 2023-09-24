@@ -7,11 +7,14 @@ import 'package:server/load_maker.dart';
 import 'lua_worker.dart';
 import 'names.dart';
 
-typedef LuaRequestData = ({String luaChunk, int id});
+typedef LuaRequestData = ({String luaChunk, int id, Map<String, dynamic> input});
 
+Future<void> runLuaLoadWorker(LuaRequestData d, String id) async {
+  await Isolate.spawn<LuaRequestData>(luaIsolateLoadWorkerFunction, d, debugName: id);
+}
 
 Future<void> runLuaIsolateJob(LuaRequestData d, String id) async {
-  await Isolate.spawn<LuaRequestData>(luaIsolateLoadWorkerFunction, d, debugName: id);
+  await Isolate.spawn<LuaRequestData>(luaIsolateJobFunction, d, debugName: id);
 }
 
 void dartIsolateWorkerFunction(String data) async {
@@ -50,8 +53,7 @@ void luaIsolateLoadWorkerFunction(LuaRequestData data) async {
     sendFn: (d) {
       output.send("completed:$d");
     },
-    data: {"input": data},
-  ).run();
+  ).run(data.input);
 }
 
 void luaIsolateJobFunction(LuaRequestData data) async {
@@ -67,10 +69,10 @@ void luaIsolateJobFunction(LuaRequestData data) async {
     chunk: data.luaChunk,
     sendFn: (d) {
       // prefix the sent data with "<request_id>:" to identify it to the
+      print("SENDING=>${data.id}:$d");
       output.send("${data.id}:$d");
     },
-    data: {"input": data},
-  ).run();
+  ).run(data.input);
 }
 
 class LuaSingleIsolateExecutor {
@@ -107,8 +109,7 @@ class LuaSingleIsolateExecutor {
         // prefix the sent data with "<request_id>:" to identify it to the
         output.send("$createdCount:$d");
       },
-      data: {"input": data, "pid": createdCount},
-    ).run();
+    ).run(data.input);
   }
 
   void exec(LuaRequestData data) {

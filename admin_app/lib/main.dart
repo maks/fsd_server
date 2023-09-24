@@ -73,7 +73,7 @@ class _UserViewState extends State<UserView> {
   final TextEditingController _controller = TextEditingController();
 
   final _channel = WebSocketChannel.connect(
-    Uri.parse('ws://localhost:9090/ws'),
+    Uri.parse('ws://127.0.0.1:9090/ws'),
   );
 
   @override
@@ -135,7 +135,7 @@ class AdminView extends StatefulWidget {
 
 class _AdminViewState extends State<AdminView> {
   final _adminChannel = WebSocketChannel.connect(
-    Uri.parse('ws://localhost:9999/ws'),
+    Uri.parse('ws://127.0.0.1:9999/ws'),
   );
 
   final List<DataPoint> _memoryReadings = [];

@@ -36,9 +36,8 @@ class LoadMaker {
     final script = File("scripts/load_maker.lua").readAsStringSync();
     
     for (int i = 0; i < workerCount; i++) {
-      final LuaRequestData data = (id: i, luaChunk: script);
-      await runLuaIsolateJob(data, "$i");
-      // await Future.delayed(Duration(milliseconds: 2));
+      final LuaRequestData data = (id: i, luaChunk: script, input: {});
+      await runLuaLoadWorker(data, "$i");
       _workerCount++;
     }
     log("started $_workerCount load workers");

@@ -1,4 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 
@@ -17,9 +18,17 @@ import 'package:server/names.dart';
 const logtag = "fsdmain";
 
 int _userRequestIdCounter = 0;
-Map<int, ({int req, int sum})> _userRequestsById = {};
+Map<int, ({int req, String sum})> _userRequestsById = {};
 
 List<WebSocketSink> _socketSinks = [];
+
+void sendUserResults() {
+  // send results list to user
+  final resultsList = _userRequestsById.values.map((e) => [e.req, e.sum]).toList();
+  for (final sink in _socketSinks) {
+    sink.add(jsonEncode(resultsList));
+  }
+}
 
 void main(List<String> arguments) async {
   const debug = true;
@@ -36,28 +45,30 @@ void main(List<String> arguments) async {
       Log.d(logtag, "got user job result:$message");
       final mesg = message.toString().split(":");
       final id = int.tryParse(mesg[0]);
-      final result = int.parse(mesg[1]);
+      final result = mesg[1];
       if (id != null && mesg.length == 2) {
         _userRequestsById[id] = (req: _userRequestsById[id]!.req, sum: result);
         Log.d(logtag, "sent: [$id]:${mesg[1]}");
       } else {
         Log.e(logtag, "invalid user response id:$mesg[0]");
       }
-      final resultsList = _userRequestsById.values.map((e) => "[${e.req},${e.sum}]").toList();
 
-      for (final sink in _socketSinks) {
-        sink.add("$resultsList");
-      }
+      sendUserResults();
     });
 
     webSocket.stream.listen((message) async {
       Log.d(logtag, 'Received user WS message: $message');
       final chunk = await File("scripts/calc.lua").readAsString();
       final userReqInput = int.parse(message as String);
-      final LuaRequestData data = (id: _userRequestIdCounter, luaChunk: chunk);
-      _userRequestsById[_userRequestIdCounter] = (req: userReqInput, sum: 0);
+      final LuaRequestData data = (id: _userRequestIdCounter, luaChunk: chunk, input: {"sum_to": userReqInput});
+      _userRequestsById[_userRequestIdCounter] = (req: userReqInput, sum: "calculating...");
       _userRequestIdCounter++;
       _socketSinks.add(webSocket.sink);
+
+      // send latest results immediately to let user know requested calc is in-progress status
+      sendUserResults();
+
+      // and now run the job
       runLuaIsolateJob(data, "runLuaIsolateJob");     
     });
   });
@@ -84,11 +95,11 @@ void main(List<String> arguments) async {
 
   // separate port for "user" websockets for now
   final wsServer = await shelf_io.serve(userWSHandler, 'localhost', 9090);
-  Log.d(logtag, 'Serving at Users on ws://${wsServer.address.host}:${wsServer.port}');
+  Log.d(logtag, 'Serving at Users on ws://${wsServer.address.address}:${wsServer.port}');
 
   // separate port for "admin" websockets for now
   final adminWSServer = await shelf_io.serve(adminWSHandler, 'localhost', 9999);
-  Log.d(logtag, 'Serving at Admin on ws://${adminWSServer.address.host}:${adminWSServer.port}');
+  Log.d(logtag, 'Serving at Admin on ws://${adminWSServer.address.address}:${adminWSServer.port}');
 
   // serve admin web app with HTTP on different port
   final adminAppPath = Directory('admin_app/build/web');
@@ -96,5 +107,5 @@ void main(List<String> arguments) async {
   final staticServer = await shelf_io.serve(staticHandler, 'localhost', 8080);
   // Enable content compression
   staticServer.autoCompress = true;
-  Log.d(logtag, 'Serving at http://${staticServer.address.host}:${staticServer.port}');
+  Log.d(logtag, 'Serving at http://${staticServer.address.address}:${staticServer.port}');
 }
