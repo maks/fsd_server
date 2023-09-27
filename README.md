@@ -27,11 +27,11 @@ There are currently auxillary tools to aid development and debugging including a
 * [X] Consolidate to single Shelf based server
 * [X] Run Lua workers with Tribbles
 * [X] Basic Named SendPort registry
-* [ ] Websocket admin API
-* [ ] Websocket user API
-* [ ] Flutter web admin app - display stats/graph
-* [ ] Flutter web admin app - Lua repl
-* [ ] Flutter Linux desktop admin app
+* [X] Websocket admin API
+* [X] Websocket user API
+* [X] Flutter Linux desktop admin app - display stats/graph
+* [ ] Flutter Linux desktop admin app - Lua repl
+* [ ] Flutter web admin admin app
 
 ### M2: MVP
 

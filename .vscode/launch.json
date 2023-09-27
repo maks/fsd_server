@@ -5,11 +5,20 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "preempt",
+            "name": "fsd",
             "request": "launch",
             "type": "dart",
-            "program": "bin/preempt_test.dart",
-            "args": ["5555", "1"]
+            "program": "bin/fsd.dart",
+            "args": [
+                
+            ]
+        },
+        {
+            "name": "Admin app",
+            "type": "dart",
+            "request": "launch",
+            "cwd": "admin_app",
+            "program": "lib/main.dart"
         }
     ]
 }

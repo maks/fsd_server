@@ -69,15 +69,22 @@ class UserView extends StatefulWidget {
   State<UserView> createState() => _UserViewState();
 }
 
-class _UserViewState extends State<UserView> {
+class _UserViewState extends State<UserView> with AutomaticKeepAliveClientMixin<UserView> {
   final TextEditingController _controller = TextEditingController();
+  List<dynamic> results = [];
 
   final _channel = WebSocketChannel.connect(
     Uri.parse('ws://127.0.0.1:9090/ws'),
   );
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    // needed for AutomaticKeepAliveClientMixin
+    super.build(context); 
+
     return Column(
       children: [
         Form(
@@ -92,7 +99,7 @@ class _UserViewState extends State<UserView> {
           stream: _channel.stream,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              final results = jsonDecode(snapshot.data) as List;
+              results = jsonDecode(snapshot.data) as List<dynamic>;
               return SizedBox(
                 height: MediaQuery.of(context).size.height * 0.5,
                 child: ListView.builder(
@@ -133,7 +140,7 @@ class AdminView extends StatefulWidget {
   State<AdminView> createState() => _AdminViewState();
 }
 
-class _AdminViewState extends State<AdminView> {
+class _AdminViewState extends State<AdminView> with AutomaticKeepAliveClientMixin<AdminView> {
   final _adminChannel = WebSocketChannel.connect(
     Uri.parse('ws://127.0.0.1:9999/ws'),
   );
@@ -144,6 +151,9 @@ class _AdminViewState extends State<AdminView> {
   late final LineChartData memData;
   late final LineChartData compsData;
   int _dataCounter = 0;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -161,6 +171,9 @@ class _AdminViewState extends State<AdminView> {
 
   @override
   Widget build(BuildContext context) {
+    // needed for AutomaticKeepAliveClientMixin
+    super.build(context); 
+    
     return StreamBuilder(
       stream: _adminChannel.stream,
       builder: (context, snapshot) {
@@ -243,4 +256,5 @@ class _AdminViewState extends State<AdminView> {
     _adminChannel.sink.close();
     super.dispose();
   }
+  
 }

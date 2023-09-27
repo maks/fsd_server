@@ -37,10 +37,10 @@ packages:
     dependency: "direct main"
     description:
       name: bonsai
-      sha256: "949e5087f5463d8d129f4f3056906cc7bd845fcb4bd8c8d5967e0106d52a2ebf"
+      sha256: "872cff8b2f33c75c494a48954e6b0180627246ea1a16fd29f4914cc711603ff5"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.1"
+    version: "1.2.0"
   boolean_selector:
     dependency: transitive
     description:
