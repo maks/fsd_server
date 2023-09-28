@@ -19,7 +19,7 @@ Map<int, ({int req, String sum})> _userRequestsById = {};
 
 List<WebSocketSink> _socketSinks = [];
 
-void sendUserResults() {
+void sendListofUserResults() {
   // send results list to user
   final resultsList = _userRequestsById.values.map((e) => [e.req, e.sum]).toList();
   for (final sink in _socketSinks) {
@@ -33,6 +33,7 @@ Future<void> wsServe() async {
     // register port so that job isolates can look it up when they need to report their completion result
     IsolateNameServer.registerPortWithName(rp.sendPort, userJobPortName);
 
+    // listen for results to user calc job requests coming from user job Isolates
     rp.listen((message) {
       Log.d(logtag, "got user job result:$message");
       final mesg = message.toString().split(":");
@@ -45,7 +46,7 @@ Future<void> wsServe() async {
         Log.e(logtag, "invalid user response id:$mesg[0]");
       }
 
-      sendUserResults();
+      sendListofUserResults();
     });
 
     webSocket.stream.listen((message) async {
@@ -55,10 +56,12 @@ Future<void> wsServe() async {
       final LuaRequestData data = (id: _userRequestIdCounter, luaChunk: chunk, input: {"sum_to": userReqInput});
       _userRequestsById[_userRequestIdCounter] = (req: userReqInput, sum: "calculating...");
       _userRequestIdCounter++;
+
+      // add this socket to list that receives broadcasts of the user results lists as we send results to all sockets
       _socketSinks.add(webSocket.sink);
 
       // send latest results immediately to let user know requested calc is in-progress status
-      sendUserResults();
+      sendListofUserResults();
 
       // and now run the job
       runLuaIsolateJob(data, "runLuaIsolateJob");

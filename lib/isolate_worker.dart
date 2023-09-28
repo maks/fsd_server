@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:isolate';
 
+import 'package:bonsai/bonsai.dart';
 import 'package:isolate_name_server/isolate_name_server.dart';
 import 'package:server/load_maker.dart';
 
@@ -14,7 +15,20 @@ Future<void> runLuaLoadWorker(LuaRequestData d, String id) async {
 }
 
 Future<void> runLuaIsolateJob(LuaRequestData d, String id) async {
-  await Isolate.spawn<LuaRequestData>(luaIsolateJobFunction, d, debugName: id);
+  final onErrorHandler = ReceivePort();
+
+  onErrorHandler.forEach((mesg) {
+    Log.e("[runLuaIsolateJob] isolate [${d.id}] crashed with $mesg");
+    // let the job manager know:
+    IsolateNameServer.lookupPortByName(userJobPortName)?.send("${d.id}:ERROR");
+  });
+
+  await Isolate.spawn<LuaRequestData>(
+    luaIsolateJobFunction,
+    d,
+    debugName: id,
+    onError: onErrorHandler.sendPort,
+  );
 }
 
 void dartIsolateWorkerFunction(String data) async {
@@ -61,8 +75,8 @@ void luaIsolateJobFunction(LuaRequestData data) async {
   if (output == null) {
     throw Exception("missing user_service Port name");
   }
+  print("start Lua [${data.id}] (${data.input})");
 
-  print("start Lua [${data.id}]");
   // we give the Lua worker a send function that just immediately sends the data
   // out to the output send port for user jobs to report their "return values"
   await LuaWorker(
