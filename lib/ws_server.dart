@@ -54,7 +54,7 @@ Future<void> wsServe() async {
       final chunk = await File("scripts/calc.lua").readAsString();
       final userReqInput = int.parse(message as String);
       final LuaRequestData data = (
-        id: _userRequestIdCounter,
+        pid: _userRequestIdCounter,
         luaChunk: chunk,
         outputPortName: userJobPortName,
         input: {"sum_to": userReqInput},
@@ -69,7 +69,7 @@ Future<void> wsServe() async {
       sendListofUserResults();
 
       // and now run the job
-      runLuaIsolateJob(data, "runLuaIsolateJob");
+      runLuaIsolateJob(data);
     });
   });
 

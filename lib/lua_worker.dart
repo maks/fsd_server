@@ -24,7 +24,7 @@ class LuaWorker {
       ls.register('dprint', lua_print);
 
       ls.pushString(Isolate.current.debugName);
-      ls.setGlobal('tid');
+      ls.setGlobal('pid');
 
       _ready.complete();
     }); // allow all std Lua libs

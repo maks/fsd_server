@@ -2,10 +2,10 @@
     "Lua.diagnostics.globals": [
         "send",
         "mesg",
-        "tid",
         "print",
         "input",
         "sleep",
-        "sum_to"
+        "sum_to",
+        "pid"
     ]
 }

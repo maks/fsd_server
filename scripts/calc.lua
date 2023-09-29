@@ -1,5 +1,5 @@
 -- input is a int provided by the host
-print("Lua TID:", tid)
+print("Lua PID:", pid)
 print("Sum to:", sum_to)
 if (sum_to == 13) then error("unlucky number!") end
 local accum = 0

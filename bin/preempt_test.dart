@@ -33,7 +33,7 @@ void main(List<String> args) async {
   });
 
   for (int i = 0; i < jobs; i++) {
-    final LuaRequestData data = (id: i, luaChunk: chunk, input: {}, outputPortName: "NA");
+    final LuaRequestData data = (pid: i, luaChunk: chunk, input: {}, outputPortName: "NA");
     await Isolate.spawn<LuaRequestData>(luaIsolateJob, data, debugName: "$i");
   }
 
@@ -68,7 +68,7 @@ void luaIsolateJob(LuaRequestData data) async {
         chunk: data.luaChunk,
         sendFn: (d) {
           // prefix the sent data with "<request_id>:" to identify it to the
-          output.send("${data.id}:$d");
+          output.send("${data.pid}:$d");
         },
       ).run(input);
     },
