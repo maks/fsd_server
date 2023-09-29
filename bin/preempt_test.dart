@@ -5,7 +5,7 @@ import 'dart:isolate';
 import 'package:isolate_name_server/isolate_name_server.dart';
 import 'package:server/isolate_worker.dart';
 import 'package:server/lua_worker.dart';
-import 'package:server/names.dart';
+import 'package:server/port_names.dart';
 
 int _reponsesPerSec = 0;
 
@@ -33,7 +33,7 @@ void main(List<String> args) async {
   });
 
   for (int i = 0; i < jobs; i++) {
-    final LuaRequestData data = (id: i, luaChunk: chunk, input: {});
+    final LuaRequestData data = (id: i, luaChunk: chunk, input: {}, outputPortName: "NA");
     await Isolate.spawn<LuaRequestData>(luaIsolateJob, data, debugName: "$i");
   }
 

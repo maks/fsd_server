@@ -26,7 +26,9 @@ class LoadMaker {
     // the port that load workers will report back on
     ReceivePort rp = ReceivePort();
     rp.listen((message) {
-      if (message.toString().startsWith("completed:")) {
+      final result = message.toString().split(":");
+      // this magic number is: sum(50) == 1275
+      if (result.length == 2 && result[1] == "1275") { 
         _completionCount++;
       }
     });
@@ -36,8 +38,8 @@ class LoadMaker {
     final script = File("scripts/load_maker.lua").readAsStringSync();
     
     for (int i = 0; i < workerCount; i++) {
-      final LuaRequestData data = (id: i, luaChunk: script, input: {});
-      await runLuaLoadWorker(data, "$i");
+      final LuaRequestData data = (id: i, luaChunk: script, outputPortName: LoadMaker.portName, input: {});
+      await runLuaIsolateJob(data, "$i");
       _workerCount++;
     }
     log("started $_workerCount load workers");

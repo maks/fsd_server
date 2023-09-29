@@ -5,5 +5,5 @@ while true do
     for i = 1, 50 do
         accum = accum + i
     end
-    send(tid)
+    send(accum)
 end

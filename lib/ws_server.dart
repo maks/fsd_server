@@ -12,7 +12,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'package:server/admin_tribble.dart';
 import 'package:server/isolate_worker.dart';
-import 'package:server/names.dart';
+import 'package:server/port_names.dart';
 
 int _userRequestIdCounter = 0;
 Map<int, ({int req, String sum})> _userRequestsById = {};
@@ -53,7 +53,12 @@ Future<void> wsServe() async {
       Log.d(logtag, 'Received user WS message: $message');
       final chunk = await File("scripts/calc.lua").readAsString();
       final userReqInput = int.parse(message as String);
-      final LuaRequestData data = (id: _userRequestIdCounter, luaChunk: chunk, input: {"sum_to": userReqInput});
+      final LuaRequestData data = (
+        id: _userRequestIdCounter,
+        luaChunk: chunk,
+        outputPortName: userJobPortName,
+        input: {"sum_to": userReqInput},
+      );
       _userRequestsById[_userRequestIdCounter] = (req: userReqInput, sum: "calculating...");
       _userRequestIdCounter++;
 
