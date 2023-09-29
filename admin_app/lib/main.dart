@@ -14,12 +14,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'admin app',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'fsd admin app'),
     );
   }
 }
@@ -37,7 +37,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -46,6 +46,7 @@ class _MyHomePageState extends State<MyHomePage> {
             tabs: [
               Tab(icon: Icon(Icons.person)),
               Tab(icon: Icon(Icons.settings)),
+              Tab(icon: Icon(Icons.terminal)),
             ],
           ),
         ),
@@ -54,6 +55,7 @@ class _MyHomePageState extends State<MyHomePage> {
             children: <Widget>[
               UserView(),
               AdminView(),
+              ReplView(),
             ],
           ),
         ),
@@ -83,7 +85,7 @@ class _UserViewState extends State<UserView> with AutomaticKeepAliveClientMixin<
   @override
   Widget build(BuildContext context) {
     // needed for AutomaticKeepAliveClientMixin
-    super.build(context); 
+    super.build(context);
 
     return Column(
       children: [
@@ -156,11 +158,11 @@ class _AdminViewState extends State<AdminView> with AutomaticKeepAliveClientMixi
   @override
   Widget build(BuildContext context) {
     // needed for AutomaticKeepAliveClientMixin
-    super.build(context); 
+    super.build(context);
 
     // ignore: prefer_const_declarations
     final showIncomingDebug = false;
-    
+
     return StreamBuilder(
       stream: _adminChannel.stream,
       builder: (context, snapshot) {
@@ -168,7 +170,7 @@ class _AdminViewState extends State<AdminView> with AutomaticKeepAliveClientMixi
           final json = jsonDecode(snapshot.data);
           final int mem = json["memoryUsage"]; //todo proper typed json parsing
           final int comps = json["completionCount"]; //todo proper typed json parsing
-         
+
           sparkMemData.add(mem.toDouble() / (1024 * 1024));
           sparkCompsData.add(comps.toDouble());
 
@@ -240,5 +242,70 @@ class _AdminViewState extends State<AdminView> with AutomaticKeepAliveClientMixi
     _adminChannel.sink.close();
     super.dispose();
   }
-  
+}
+
+class ReplView extends StatefulWidget {
+  const ReplView({super.key});
+
+  @override
+  State<ReplView> createState() => _ReplViewState();
+}
+
+class _ReplViewState extends State<ReplView> with AutomaticKeepAliveClientMixin<ReplView> {
+  String _replPaper = ">REPL\n";
+  FocusNode textInputFocusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  Widget build(BuildContext context) {
+    // needed for AutomaticKeepAliveClientMixin
+    super.build(context);
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                child: Container(
+                  width: 400,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                  ),
+                  child: Text(
+                    _replPaper,
+                    textAlign: TextAlign.left,
+                    
+                  ),
+                ),
+              ),
+            ),
+            TextFormField(
+              focusNode: textInputFocusNode,
+              decoration: const InputDecoration(labelText: 'Command:'),
+              onFieldSubmitted: (String s) {
+                _sendReplMessage(s);
+                FocusScope.of(context).requestFocus(textInputFocusNode);
+                // make sure latest text is scrolled into view:
+                _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+              },
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  bool get wantKeepAlive => true;
+
+  void _sendReplMessage(String s) {
+    setState(() {
+      _replPaper += "$s\n";
+    });
+    
+  }
 }
