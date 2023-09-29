@@ -161,7 +161,7 @@ class _AdminViewState extends State<AdminView> with AutomaticKeepAliveClientMixi
 
     // create a data model
     memData = LineChartData(datasets: [
-      Dataset(label: 'Memory', dataPoints: _memoryReadings),
+      Dataset(label: 'Memory (MB)', dataPoints: _memoryReadings),
     ]);
 
     compsData = LineChartData(datasets: [
@@ -181,7 +181,7 @@ class _AdminViewState extends State<AdminView> with AutomaticKeepAliveClientMixi
           final json = jsonDecode(snapshot.data);
           final int mem = json["memoryUsage"]; //todo proper typed json parsing
           final int comps = json["completionCount"]; //todo proper typed json parsing
-          _memoryReadings.add(DataPoint(y: mem.toDouble(), x: (_dataCounter++).toDouble()));
+          _memoryReadings.add(DataPoint(y: mem.toDouble() / (1024 * 1024), x: (_dataCounter++).toDouble()));
           if (comps > 0) {
             _completionReadings.add(DataPoint(y: comps.toDouble(), x: _dataCounter.toDouble()));
           }

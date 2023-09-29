@@ -41,6 +41,9 @@ class LoadMaker {
       final LuaRequestData data = (pid: i, luaChunk: script, outputPortName: LoadMaker.portName, input: {});
       await runLuaIsolateJob(data);
       _workerCount++;
+      if (_workerCount % 500 == 0) {
+        await Future<void>.delayed(Duration(milliseconds: 10));
+      }      
     }
     log("started $_workerCount load workers");
   }
