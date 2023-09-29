@@ -1,7 +1,7 @@
 import 'dart:convert';
 
+import 'package:chart_sparkline/chart_sparkline.dart';
 import 'package:flutter/material.dart';
-import 'package:simple_line_chart/simple_line_chart.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 void main() {
@@ -145,34 +145,21 @@ class _AdminViewState extends State<AdminView> with AutomaticKeepAliveClientMixi
     Uri.parse('ws://127.0.0.1:9999/ws'),
   );
 
-  final List<DataPoint> _memoryReadings = [];
-  final List<DataPoint> _completionReadings = [];
-
-  late final LineChartData memData;
-  late final LineChartData compsData;
   int _dataCounter = 0;
+
+  final sparkMemData = <double>[];
+  final sparkCompsData = <double>[];
 
   @override
   bool get wantKeepAlive => true;
 
   @override
-  void initState() {
-    super.initState();
-
-    // create a data model
-    memData = LineChartData(datasets: [
-      Dataset(label: 'Memory (MB)', dataPoints: _memoryReadings),
-    ]);
-
-    compsData = LineChartData(datasets: [
-      Dataset(label: 'Completions', dataPoints: _completionReadings),
-    ]);
-  }
-
-  @override
   Widget build(BuildContext context) {
     // needed for AutomaticKeepAliveClientMixin
     super.build(context); 
+
+    // ignore: prefer_const_declarations
+    final showIncomingDebug = false;
     
     return StreamBuilder(
       stream: _adminChannel.stream,
@@ -181,64 +168,61 @@ class _AdminViewState extends State<AdminView> with AutomaticKeepAliveClientMixi
           final json = jsonDecode(snapshot.data);
           final int mem = json["memoryUsage"]; //todo proper typed json parsing
           final int comps = json["completionCount"]; //todo proper typed json parsing
-          _memoryReadings.add(DataPoint(y: mem.toDouble() / (1024 * 1024), x: (_dataCounter++).toDouble()));
-          if (comps > 0) {
-            _completionReadings.add(DataPoint(y: comps.toDouble(), x: _dataCounter.toDouble()));
+         
+          sparkMemData.add(mem.toDouble() / (1024 * 1024));
+          sparkCompsData.add(comps.toDouble());
+
+          // keep sliding window of only last 50 data samples
+          // but keep first 0 value to main y-axis scale
+          if (sparkMemData.length > 50) {
+            sparkMemData.removeAt(0);
           }
+          if (sparkCompsData.length > 50) {
+            sparkCompsData.removeAt(0);
+          }
+          _dataCounter++;
         }
-        return Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: SizedBox(
+        return Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            children: [
+              SizedBox(
                 height: 300,
                 child: Row(
                   children: [
-                    SizedBox(
-                      width: 300,
-                      child: LineChart(
-                        style: LineChartStyle.fromTheme(context)
-                            .copyRemoving(
-                          topAxis: true,
-                          rightAxis: true,
-                        )
-                            .copyWith(
-                          datasetStyles: [DatasetStyle(color: Colors.redAccent)],
-                          bottomAxisStyle: LineChartStyle.fromTheme(context).bottomAxisStyle?.copyWith(labelCount: 0),
-                        ),
-                        data: memData,
-                        seriesHeight: 200,
-                      ),
+                    Sparkline(
+                      data: sparkMemData,
+                      lineColor: Colors.blueAccent,
+                      lineWidth: 2.0,
+                      gridLinelabel: (val) => "  ${val.toStringAsFixed(0)} MB",
+                      enableGridLines: true,
+                      min: 0,
                     ),
-                    const SizedBox(width: 20),
-                    SizedBox(
-                      width: 300,
-                      child: LineChart(
-                        style: LineChartStyle.fromTheme(context)
-                            .copyRemoving(
-                              topAxis: true,
-                              rightAxis: true,
-                            )
-                            .copyWith(
-                              bottomAxisStyle:
-                                  LineChartStyle.fromTheme(context).bottomAxisStyle?.copyWith(labelCount: 0),
-                            ),
-                        data: compsData,
-                        seriesHeight: 200,
-                      ),
+                    const SizedBox(width: 80),
+                    Sparkline(
+                      data: sparkCompsData,
+                      lineColor: Colors.deepOrangeAccent,
+                      lineWidth: 2.0,
+                      gridLinelabel: (val) => "  ${val.toStringAsFixed(0)}",
+                      enableGridLines: true,
+                      min: 0,
                     ),
                   ],
                 ),
               ),
-            ),
-            Text(snapshot.hasData ? 'Data [$_dataCounter]:${snapshot.data}' : 'No Data'),
-            Form(
-              child: TextFormField(
-                decoration: const InputDecoration(labelText: 'Jobs:'),
-                onFieldSubmitted: (String s) => _sendAdminMessage(s),
+              Padding(
+                padding: const EdgeInsets.only(top: 24, bottom: 32),
+                child: Form(
+                  child: TextFormField(
+                    decoration: const InputDecoration(labelText: 'Jobs:'),
+                    onFieldSubmitted: (String s) => _sendAdminMessage(s),
+                  ),
+                ),
               ),
-            ),
-          ],
+              // ignore: dead_code
+              if (showIncomingDebug) Text(snapshot.hasData ? 'Data [$_dataCounter]:${snapshot.data}' : 'No Data'),
+            ],
+          ),
         );
       },
     );
