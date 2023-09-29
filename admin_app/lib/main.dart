@@ -275,10 +275,12 @@ class _ReplViewState extends State<ReplView> with AutomaticKeepAliveClientMixin<
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey),
                   ),
-                  child: Text(
-                    _replPaper,
-                    textAlign: TextAlign.left,
-                    
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8, right: 4),
+                    child: Text(
+                      _replPaper,
+                      textAlign: TextAlign.left,
+                    ),
                   ),
                 ),
               ),
