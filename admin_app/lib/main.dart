@@ -193,7 +193,7 @@ class _AdminViewState extends State<AdminView> with AutomaticKeepAliveClientMixi
                     Sparkline(
                       data: sparkMemData,
                       lineColor: Colors.blueAccent,
-                      lineWidth: 2.0,
+                      lineWidth: 3.0,
                       gridLinelabel: (val) => "  ${val.toStringAsFixed(0)} MB",
                       enableGridLines: true,
                       min: 0,
@@ -201,8 +201,8 @@ class _AdminViewState extends State<AdminView> with AutomaticKeepAliveClientMixi
                     const SizedBox(width: 80),
                     Sparkline(
                       data: sparkCompsData,
-                      lineColor: Colors.deepOrangeAccent,
-                      lineWidth: 2.0,
+                      lineColor: Colors.blueGrey,
+                      lineWidth: 3.0,
                       gridLinelabel: (val) => "  ${val.toStringAsFixed(0)}",
                       enableGridLines: true,
                       min: 0,
