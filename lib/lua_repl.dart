@@ -1,59 +1,58 @@
-import 'package:lua_dardo/lua.dart';
+import 'dart:async';
 
-/// Function called to supply each user input line in the "read" part of the Lua REPL
-typedef LuaReplReadInput = String? Function();
+import 'package:bonsai/bonsai.dart';
+import 'package:lua_dardo/lua.dart';
 
 typedef LuaReplPrintOutput = void Function(String);
 
 class LuaRepl {
   LuaState ls;
-  LuaReplReadInput readInput;
+  Stream<String> input;
   LuaReplPrintOutput output;
   bool debugLogging;
 
-  LuaRepl(this.ls, this.readInput, this.output, {this.debugLogging = false});
+  LuaRepl(this.ls, this.input, this.output, {this.debugLogging = false});
 
-  void repl() {
-    while (true) {
-      output('> ');
-      final input = readInput();
-      if (input != null) {
-        late final ThreadStatus? status;
-        final res = loadLineAsExpression(ls, input);
+  Future<void> repl() async {
+    await ls.openLibs();
+    output('> ');
+    await for (String line in input) {
+      if (line.isNotEmpty) {
+        final ThreadStatus? status;
+        final res = await loadLineAsExpression(line);
         if (res) {
           // if load was ok, run the loaded string
           try {
-            status = ls.pCall(0, 0, 1);
+            status = await ls.pCall(0, 0, 0);
             if (status != ThreadStatus.luaOk) {
-              print("error calling expression: status");
+              print("error calling expression:$status");
             }
             continue;
-          } catch (e, _) {
-            print(e);
+          } catch (e, st) {
+            Log.e("err", e, st);
           }
         } else {
           ls.pop(-1); // get rid of prev loaded line
           try {
-            ls.loadString(input); // now try again without the 'return' prefix
-            final result2 = ls.pCall(0, 0, 0);
+            await ls.loadString(line); // now try again without the 'return' prefix
+            final result2 = await ls.pCall(0, 0, 0);
             if (result2 != ThreadStatus.luaOk) {
               print("call statement err: $result2");
             }
-          } catch (e, _) {
-            print("statement exception: $e");
+          } catch (e, st) {
+            print("statement exception: $e $st");
           }
         }
-      } else {
-        break;
       }
+      output('> ');
     }
   }
 
-  bool loadLineAsExpression(LuaState ls, String line) {
+  Future<bool> loadLineAsExpression(String line) async {
     late final ThreadStatus? status;
     bool result = false;
     try {
-      status = ls.loadString("return $line\n");
+      status = await ls.loadString("return $line\n");
       if (status != ThreadStatus.luaOk) {
         debugPrint("error with exp: $status");
       } else {

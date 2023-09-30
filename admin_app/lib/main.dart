@@ -256,6 +256,16 @@ class _ReplViewState extends State<ReplView> with AutomaticKeepAliveClientMixin<
   FocusNode textInputFocusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
 
+  final _replChannel = WebSocketChannel.connect(
+    Uri.parse('ws://127.0.0.1:9111/ws'),
+  );
+
+  @override
+  void dispose() {
+    _replChannel.sink.close();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     // needed for AutomaticKeepAliveClientMixin
@@ -308,6 +318,11 @@ class _ReplViewState extends State<ReplView> with AutomaticKeepAliveClientMixin<
     setState(() {
       _replPaper += "$s\n";
     });
+
+    if (s.isNotEmpty) {
+      debugPrint("send REPL:$s");
+      _replChannel.sink.add(s);
+    }
     
   }
 }

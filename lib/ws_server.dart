@@ -4,6 +4,8 @@ import 'dart:io';
 
 import 'package:bonsai/bonsai.dart';
 import 'package:isolate_name_server/isolate_name_server.dart';
+import 'package:lua_dardo/lua.dart';
+import 'package:server/lua_repl.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_static/shelf_static.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
@@ -18,6 +20,8 @@ int _userRequestIdCounter = 0;
 Map<int, ({int req, String sum})> _userRequestsById = {};
 
 List<WebSocketSink> _socketSinks = [];
+
+LuaRepl? repl;
 
 void sendListofUserResults() {
   // send results list to user
@@ -93,13 +97,35 @@ Future<void> wsServe() async {
     });
   });
 
-  // separate port for "user" websockets for now
+  final replWSHandler = webSocketHandler((WebSocketChannel webSocket) async {
+    Log.i(logtag, "new Admin WS connection");
+
+    // create new REPL if one doesn't yet exist
+    LuaState state = LuaState.newState();
+    // allow using all lua std libraries
+    await state.openLibs();
+
+    stdout.write('LuaDardo 0.0.4 (Lua 5.3) Ctrl-d to exit\n');
+
+    repl ??= LuaRepl(
+      state,
+      webSocket.stream.map((e) => e.toString()),
+      (String s) => webSocket.sink.add(s),
+      debugLogging: false,
+    )..repl();
+  });
+
+  // separate port for "user" websockets
   final wsServer = await shelf_io.serve(userWSHandler, 'localhost', 9090);
   Log.d(logtag, 'Serving at Users on ws://${wsServer.address.address}:${wsServer.port}');
 
-  // separate port for "admin" websockets for now
+  // separate port for "admin" websockets
   final adminWSServer = await shelf_io.serve(adminWSHandler, 'localhost', 9999);
   Log.d(logtag, 'Serving at Admin on ws://${adminWSServer.address.address}:${adminWSServer.port}');
+
+  // separate port for "repl" websockets
+  final replWSServer = await shelf_io.serve(replWSHandler, 'localhost', 9111);
+  Log.d(logtag, 'Serving at REPL on ws://${replWSServer.address.address}:${replWSServer.port}');
 
   // serve admin web app with HTTP on different port
   final adminAppPath = Directory('admin_app/build/web');
