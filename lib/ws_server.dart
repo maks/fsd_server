@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:bonsai/bonsai.dart';
 import 'package:isolate_name_server/isolate_name_server.dart';
 import 'package:lua_dardo/lua.dart';
-import 'package:server/lua_repl.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_static/shelf_static.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
@@ -16,12 +15,14 @@ import 'package:server/admin_tribble.dart';
 import 'package:server/isolate_worker.dart';
 import 'package:server/port_names.dart';
 
+import 'lua_minimal_repl.dart';
+
 int _userRequestIdCounter = 0;
 Map<int, ({int req, String sum})> _userRequestsById = {};
 
 List<WebSocketSink> _socketSinks = [];
 
-LuaRepl? repl;
+LuaMinRepl? repl;
 
 void sendListofUserResults() {
   // send results list to user
@@ -98,16 +99,16 @@ Future<void> wsServe() async {
   });
 
   final replWSHandler = webSocketHandler((WebSocketChannel webSocket) async {
-    Log.i(logtag, "new Admin WS connection");
+    Log.i(logtag, "new REPL WS connection");
 
     // create new REPL if one doesn't yet exist
     LuaState state = LuaState.newState();
     // allow using all lua std libraries
     await state.openLibs();
 
-    stdout.write('LuaDardo 0.0.4 (Lua 5.3) Ctrl-d to exit\n');
+    webSocket.sink.add('LuaDardo 0.0.4 (Lua 5.3) Ctrl-d to exit\n');
 
-    repl ??= LuaRepl(
+    repl ??= LuaMinRepl(
       state,
       webSocket.stream.map((e) => e.toString()),
       (String s) => webSocket.sink.add(s),

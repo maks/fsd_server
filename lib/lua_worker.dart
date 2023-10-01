@@ -51,6 +51,8 @@ class LuaWorker {
     await ls.call(0, 0);
   }
 
+  int get luaOpsCount => ls.opsCount;
+
   // ======= Functions exposed to Lua ====================================
 
   /// Function exposed to Lua: allows Lua to send strings to Dart host
