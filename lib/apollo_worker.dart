@@ -49,7 +49,7 @@ class ApolloWorker {
 
   // int get luaOpsCount => ls.opsCount;
 
-  void _sleep(int s) async {
-    await Future<void>.delayed(Duration(seconds: s));
+  void _sleep(int ms) async {
+    await Future<void>.delayed(Duration(milliseconds: ms));
   }
 }

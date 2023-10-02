@@ -24,7 +24,7 @@ class Calc {
         accum = accum + i;
       }
       send("$accum");
-      sleep(1); // non-std Dart, no need for await
+      sleep(1000); // non-std Dart, no need for await
     }
   }
 }

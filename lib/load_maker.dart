@@ -7,7 +7,7 @@ import 'package:isolate_name_server/isolate_name_server.dart';
 import 'isolate_worker.dart';
 
 class LoadMaker {
-  static const portName = "load_maker"; 
+  static const portName = "load_maker";
 
   int _completionCount = 0;
   int _workerCount = 0;
@@ -23,12 +23,16 @@ class LoadMaker {
   }
 
   Future<void> startWorkLoad(int workerCount) async {
+    // ignore: constant_identifier_names
+    const SUMTO = 10;
+    final expectedResult = (SUMTO * (SUMTO + 1)) ~/ 2;
+    log("workload magic number:$expectedResult");
     // the port that load workers will report back on
     ReceivePort rp = ReceivePort();
     rp.listen((message) {
       final result = message.toString().split(":");
-      // HARDCODED: result must be the magic number: sum(50) == 1275
-      if (result.length == 2 && result[1] == "1275") { 
+      // HARDCODED: result must be the magic number: sum(SUMTO) == expectedResult
+      if (result.length == 2 && result[1] == "$expectedResult") {
         _completionCount++;
       }
     });
@@ -37,22 +41,21 @@ class LoadMaker {
 
     // final script = File("scripts/load_maker.lua").readAsStringSync();
     final script = File("scripts/calc.dart").readAsStringSync();
-    
+
     for (int i = 0; i < workerCount; i++) {
       final LuaRequestData data = (
         pid: i,
         luaChunk: script,
         outputPortName: LoadMaker.portName,
-        input: {"sum_to": 50, "fn_name": "loop"},
+        input: {"sum_to": SUMTO, "fn_name": "loop"},
       );
       // await runLuaIsolateJob(data);
       await runApolloIsolateJob(data);
       _workerCount++;
       if (_workerCount % 500 == 0) {
         await Future<void>.delayed(Duration(milliseconds: 10));
-      }      
+      }
     }
     log("started $_workerCount load workers");
   }
 }
-
