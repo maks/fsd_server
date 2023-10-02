@@ -8,6 +8,9 @@ environment:
   sdk: ^3.0.6
 
 dependencies:
+  # apollovm: ^0.0.44
+  apollovm: 
+    path: ../apollovm_dart
   bonsai: ^1.2.0
   collection: ^1.18.0
   filesize: ^2.0.1

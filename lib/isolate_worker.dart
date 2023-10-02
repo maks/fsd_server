@@ -6,6 +6,7 @@ import 'package:collection/collection.dart';
 import 'package:isolate_name_server/isolate_name_server.dart';
 import 'package:server/port_names.dart';
 
+import 'apollo_worker.dart';
 import 'lua_worker.dart';
 
 typedef LuaRequestData = ({String luaChunk, int pid, String outputPortName, Map<String, dynamic> input});
@@ -21,9 +22,6 @@ class WorkerIsolateManager {
     _rp.listen((message) {
       // expect portName of where to send the requested op output
       final [String portName, String op, ...] = message.toString().split(":");
-      // if (portName == null || op == null) {
-      //   Log.e("invalid message: $message");
-      // } else {
       if (op == "listIsolates") {
         IsolateNameServer.lookupPortByName(portName)?.send(allIsolateIds);
       }
@@ -40,7 +38,6 @@ class WorkerIsolateManager {
 
   void addIsolate(Isolate isolate) {
     _isolates.add(isolate);
-    print("added Isolate:$allIsolateIds");
   }
 
   void stopIsolate(String id) {
@@ -51,10 +48,7 @@ class WorkerIsolateManager {
     }
   }
 
-  List<String> get allIsolateIds {
-    print("curr iso:${Isolate.current.debugName}");
-    return _isolates.map((e) => e.debugName ?? '-1').toList();
-  }
+  List<String> get allIsolateIds => _isolates.map((e) => e.debugName ?? '-1').toList();
 
   void request(String replPortName, String op) {
     final port = IsolateNameServer.lookupPortByName(workerManagerPortName);
@@ -80,6 +74,25 @@ Future<void> runLuaIsolateJob(LuaRequestData d) async {
   WorkerIsolateManager().addIsolate(isolate);
 }
 
+Future<void> runApolloIsolateJob(LuaRequestData d) async {
+  final onErrorHandler = ReceivePort();
+
+  onErrorHandler.forEach((mesg) {
+    Log.e("[runApolloIsolateJob] isolate [${d.pid}] crashed with $mesg");
+    // let the job manager know:
+    IsolateNameServer.lookupPortByName(userJobPortName)?.send("${d.pid}:ERROR");
+  });
+
+  final isolate = await Isolate.spawn<LuaRequestData>(
+    _apolloIsolateJobFunction,
+    d,
+    debugName: d.pid.toString(),
+    onError: onErrorHandler.sendPort,
+  );
+  WorkerIsolateManager().addIsolate(isolate);
+}
+
+
 /// ****************************************************************
 /// **Entry point** for a newly spawned Isolate running a Lua script
 /// ****************************************************************
@@ -100,6 +113,30 @@ void _luaIsolateJobFunction(LuaRequestData data) async {
       // prefix the sent data with "<pid>:" to identify it to the
       output.send("${data.pid}:$d");
       // print("SENDING=>${data.id}:$d");
+    },
+  ).run(data.input);
+}
+
+/// ****************************************************************
+/// **Entry point** for a newly spawned Isolate running a ApolloVM script
+/// ****************************************************************
+void _apolloIsolateJobFunction(LuaRequestData data) async {
+  // final output = IsolateNameServer.lookupPortByName(userJobPortName);
+  final output = IsolateNameServer.lookupPortByName(data.outputPortName);
+  if (output == null) {
+    throw Exception("missing user_service Port name");
+  }
+
+  // print("start Lua [${data.id}] (${data.input})");
+
+  // we give the Lua worker a send function that just immediately sends the data
+  // out to the output send port for user jobs to report their "return values"
+  await ApolloWorker(
+    chunk: data.luaChunk,
+    sendFn: (d) {
+      // prefix the sent data with "<pid>:" to identify it to the
+      output.send("${data.pid}:$d");
+      // print("SENDING=>${data.pid}:$d");
     },
   ).run(data.input);
 }

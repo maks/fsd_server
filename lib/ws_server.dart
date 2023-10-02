@@ -56,13 +56,14 @@ Future<void> wsServe() async {
 
     webSocket.stream.listen((message) async {
       Log.d(logtag, 'Received user WS message: $message');
-      final chunk = await File("scripts/calc.lua").readAsString();
+      // final chunk = await File("scripts/calc.lua").readAsString();
+      final chunk = await File("scripts/calc.dart").readAsString();
       final userReqInput = int.parse(message as String);
       final LuaRequestData data = (
         pid: _userRequestIdCounter,
         luaChunk: chunk,
         outputPortName: userJobPortName,
-        input: {"sum_to": userReqInput},
+        input: {"sum_to": userReqInput, "fn_name": "sum"},
       );
       _userRequestsById[_userRequestIdCounter] = (req: userReqInput, sum: "calculating...");
       _userRequestIdCounter++;
@@ -74,7 +75,8 @@ Future<void> wsServe() async {
       sendListofUserResults();
 
       // and now run the job
-      runLuaIsolateJob(data);
+      // runLuaIsolateJob(data);
+      runApolloIsolateJob(data);
     });
   });
 

@@ -17,6 +17,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.13.0"
+  apollovm:
+    dependency: "direct main"
+    description:
+      path: "../apollovm_dart"
+      relative: true
+    source: path
+    version: "0.0.45"
   args:
     dependency: transitive
     description:
@@ -33,6 +40,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.11.0"
+  async_extension:
+    dependency: transitive
+    description:
+      name: async_extension
+      sha256: f5589e5e0611648f610b7ad00c40fbee4cb7398061ea73463bbeb8ec29fc8a28
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.5"
+  base_codecs:
+    dependency: transitive
+    description:
+      name: base_codecs
+      sha256: "41701a12ede9912663decd708279924ece5018566daa7d1f484d5f4f10894f91"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   bonsai:
     dependency: "direct main"
     description:
@@ -49,6 +72,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
+  clock:
+    dependency: transitive
+    description:
+      name: clock
+      sha256: cb6d7f03e1de671e34607e909a7213e31d7752be4fb66a86d29fe1eb14bfb5cf
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.1"
   collection:
     dependency: "direct main"
     description:
@@ -81,6 +112,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.3"
+  data_serializer:
+    dependency: transitive
+    description:
+      name: data_serializer
+      sha256: ead81eb0602da6a46fb44636880637714adcbff2e48f3902c04f95c7a230225a
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.11"
   ffi:
     dependency: transitive
     description:
@@ -137,6 +176,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.2"
+  intl:
+    dependency: transitive
+    description:
+      name: intl
+      sha256: "3bc132a9dbce73a7e4a21a17d06e1878839ffbf975568bc875c60537824b0c4d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.18.1"
   io:
     dependency: transitive
     description:
@@ -232,6 +279,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.8.3"
+  petitparser:
+    dependency: transitive
+    description:
+      name: petitparser
+      sha256: eeb2d1428ee7f4170e2bd498827296a18d4e7fc462b71727d111c0ac7707cfa6
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.1"
   pool:
     dependency: transitive
     description:
@@ -248,6 +303,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.4"
+  resource_portable:
+    dependency: transitive
+    description:
+      name: resource_portable
+      sha256: "76af61ea5af4719f0a5a9776dddb7bc61e0a85fa5b7978423cc20566f2f97b53"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.0"
   shelf:
     dependency: "direct main"
     description:
@@ -336,6 +399,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.0"
+  swiss_knife:
+    dependency: transitive
+    description:
+      name: swiss_knife
+      sha256: "3066fc2ed9a90139cf69f1733f6f9714f7a0a4e6a9d668451d5a1e371da8897b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.5"
   term_glyph:
     dependency: transitive
     description:
@@ -391,6 +462,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "11.7.1"
+  wasm_interop:
+    dependency: transitive
+    description:
+      name: wasm_interop
+      sha256: b1b378f07a4cf0103c25faf34d9a64d2c3312135b9efb47e0ec116ec3b14e48f
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.1"
   watcher:
     dependency: transitive
     description:
