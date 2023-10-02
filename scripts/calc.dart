@@ -9,21 +9,16 @@ class Calc {
     for (int i = 0; i <= sumTo; i += 1) {
       accum = accum + i;
     }
-    print("acc: $sumTo -> $accum");
+    // print("acc: $sumTo -> $accum");
     return accum;
   }
   
   // non-std Dart, no need for async
   void loop(List<Object> args) {  
+    // non-std Dart, cant have empty for(;;;)
     for (true; true; true) {
-      // non-std Dart, cant have empty for(;;;)
-      var sumTo = args[0];
-      int accum = 0;
-      // non-std Dart, no ++ operator
-      for (int i = 0; i <= sumTo; i += 1) {
-        accum = accum + i;
-      }
-      send("$accum");
+      int result = sum(args);
+      send("$result");
       sleep(1000); // non-std Dart, no need for await
     }
   }
