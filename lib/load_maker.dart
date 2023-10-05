@@ -43,9 +43,9 @@ class LoadMaker {
     final script = File("scripts/calc.dart").readAsStringSync();
 
     for (int i = 0; i < workerCount; i++) {
-      final LuaRequestData data = (
+      final ScriptRequestData data = (
         pid: i,
-        luaChunk: script,
+        scriptChunk: script,
         outputPortName: LoadMaker.portName,
         input: {"sum_to": SUMTO, "fn_name": "loop"},
       );

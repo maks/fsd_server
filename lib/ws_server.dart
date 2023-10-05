@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:bonsai/bonsai.dart';
 import 'package:isolate_name_server/isolate_name_server.dart';
-import 'package:lua_dardo/lua.dart';
 import 'package:server/apollo_repl.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_static/shelf_static.dart';
@@ -16,7 +15,6 @@ import 'package:server/admin_tribble.dart';
 import 'package:server/isolate_worker.dart';
 import 'package:server/port_names.dart';
 
-import 'lua_minimal_repl.dart';
 
 int _userRequestIdCounter = 0;
 Map<int, ({int req, String sum})> _userRequestsById = {};
@@ -55,12 +53,11 @@ Future<void> wsServe() async {
 
     webSocket.stream.listen((message) async {
       Log.d(logtag, 'Received user WS message: $message');
-      // final chunk = await File("scripts/calc.lua").readAsString();
       final chunk = await File("scripts/calc.dart").readAsString();
       final userReqInput = int.parse(message as String);
-      final LuaRequestData data = (
+      final ScriptRequestData data = (
         pid: _userRequestIdCounter,
-        luaChunk: chunk,
+        scriptChunk: chunk,
         outputPortName: userJobPortName,
         input: {"sum_to": userReqInput, "fn_name": "sum"},
       );
@@ -74,7 +71,6 @@ Future<void> wsServe() async {
       sendListofUserResults();
 
       // and now run the job
-      // runLuaIsolateJob(data);
       runApolloIsolateJob(data);
     });
   });
@@ -105,12 +101,12 @@ Future<void> wsServe() async {
     // create new REPL if one doesn't yet exist
     webSocket.sink.add('ApolloVM Ctrl-d to exit\n');
 
-    ApolloVMRepl? repl = ApolloVMRepl(
+    ApolloVMRepl(
       webSocket.stream.map((e) => e.toString()),
       (String s) => webSocket.sink.add(s),
       debugLogging: true,
       showPrompt: false,
-    )..repl();
+    ).repl();
   });
 
   // separate port for "user" websockets
