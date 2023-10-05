@@ -27,17 +27,15 @@ void main(List<dynamic> args) async {
       ?.mapExternalFunction1(ASTTypeVoid.instance, 'sleep', ASTTypeObject.instance, 'o', (o) => sleep(o as int));
 
   dartRunner.externalFunctionMapper
-      ?.mapExternalFunction1(ASTTypeVoid.instance, 'send', ASTTypeObject.instance, 'o', (o) => sendFn(o as String)); 
+      ?.mapExternalFunction1(ASTTypeVoid.instance, 'send', ASTTypeObject.instance, 'o', (o) => sendFn(o as String));
 
   final stopwatch = Stopwatch();
   stopwatch.start();
   var astValue = await dartRunner.executeClassMethod(
     '',
-    'Calc',
-    'loop',
-    positionalParameters: [
-      [10]
-    ],
+    'Repl',
+    'main',
+    positionalParameters: [],
   );
   final result = astValue.getValueNoContext();
   stopwatch.stop;

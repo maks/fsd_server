@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'admin app',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'fsd admin app'),
@@ -41,7 +41,10 @@ class _MyHomePageState extends State<MyHomePage> {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          title: Text(widget.title),
+          title: Text(
+            widget.title,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.blueGrey),
+          ),
           bottom: const TabBar(
             tabs: [
               Tab(icon: Icon(Icons.person)),
@@ -188,6 +191,20 @@ class _AdminViewState extends State<AdminView> with AutomaticKeepAliveClientMixi
           padding: const EdgeInsets.all(32.0),
           child: Column(
             children: [
+              Row(
+                children: [
+                  Text(
+                    "Memory Usage",
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.blueGrey),
+                  ),
+                  const SizedBox(width: 220),
+                  Text(
+                    "Successful Completions",
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.blueGrey),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 32),
               SizedBox(
                 height: 300,
                 child: Row(
@@ -261,6 +278,16 @@ class _ReplViewState extends State<ReplView> with AutomaticKeepAliveClientMixin<
   );
 
   @override
+  void initState() {
+    super.initState();
+    _replChannel.stream.listen((event) {
+      setState(() {
+        _replPaper += "$event\n";
+      });
+    });
+  }
+
+  @override
   void dispose() {
     _replChannel.sink.close();
     super.dispose();
@@ -316,7 +343,7 @@ class _ReplViewState extends State<ReplView> with AutomaticKeepAliveClientMixin<
 
   void _sendReplMessage(String s) {
     setState(() {
-      _replPaper += "$s\n";
+      _replPaper += ">$s\n";
     });
 
     if (s.isNotEmpty) {

@@ -30,13 +30,15 @@ There are currently auxillary tools to aid development and debugging including a
 * [X] Websocket admin API
 * [X] Websocket user API
 * [X] Flutter Linux desktop admin app - display stats/graph
-* [ ] Flutter Linux desktop admin app - Lua repl
-* [ ] Flutter web admin admin app
+* [X] Switch to ApolloVM for script VM
+* [X] Flutter admin app running on Web
+* [ ] Flutter Linux desktop admin app - apollovm repl
+
 
 ### M2: MVP
 
 * [ ] HTTPS & WSS (using lets encrypt shelf pkg)
-* [ ] Expose "spawn" function to Lua to create & run new Tribbles
+* [ ] Expose "spawn" function to script VM to create & run new Tribbles
 * [ ] User authentication
 * [ ] User authorisation/permissions
 * [ ] SQLite for K-V datastore API over websocket

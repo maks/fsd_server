@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:bonsai/bonsai.dart';
 import 'package:isolate_name_server/isolate_name_server.dart';
 import 'package:lua_dardo/lua.dart';
+import 'package:server/apollo_repl.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_static/shelf_static.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
@@ -21,8 +22,6 @@ int _userRequestIdCounter = 0;
 Map<int, ({int req, String sum})> _userRequestsById = {};
 
 List<WebSocketSink> _socketSinks = [];
-
-LuaMinRepl? repl;
 
 void sendListofUserResults() {
   // send results list to user
@@ -104,17 +103,13 @@ Future<void> wsServe() async {
     Log.i(logtag, "new REPL WS connection");
 
     // create new REPL if one doesn't yet exist
-    LuaState state = LuaState.newState();
-    // allow using all lua std libraries
-    await state.openLibs();
+    webSocket.sink.add('ApolloVM Ctrl-d to exit\n');
 
-    webSocket.sink.add('LuaDardo 0.0.4 (Lua 5.3) Ctrl-d to exit\n');
-
-    repl ??= LuaMinRepl(
-      state,
+    ApolloVMRepl? repl = ApolloVMRepl(
       webSocket.stream.map((e) => e.toString()),
       (String s) => webSocket.sink.add(s),
-      debugLogging: false,
+      debugLogging: true,
+      showPrompt: false,
     )..repl();
   });
 
