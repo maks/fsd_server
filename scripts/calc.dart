@@ -11,7 +11,6 @@ class Calc {
     for (int i = 0; i <= sumTo; i += 1) {
       accum = accum + i;
     }
-    // print("acc: $sumTo -> $accum");
     return accum;
   }
 
