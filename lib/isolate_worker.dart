@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:isolate';
 
 import 'package:bonsai/bonsai.dart';
-import 'package:collection/collection.dart';
 import 'package:isolate_name_server/isolate_name_server.dart';
 import 'package:server/port_names.dart';
 
@@ -12,19 +11,24 @@ typedef ScriptRequestData = ({String scriptChunk, int pid, String outputPortName
 
 // FIXME: dont have DI yet, so for now just making it a singleton
 class WorkerIsolateManager {
-  final List<Isolate> _isolates = [];
+  final Map<String, Isolate> _isolates = {};
   final ReceivePort _rp = ReceivePort();
    
   static final WorkerIsolateManager _singleton = WorkerIsolateManager._internal();
 
+  static int _id = 0;
+  static int get idCounter => _id++;
+
   WorkerIsolateManager._internal() {
     _rp.listen((message) {
       // expect portName of where to send the requested op output
-      final [String portName, String op, ...] = message.toString().split(":");
+      final [String portName, String op, String id, ...] = message.toString().split(":");
       if (op == "listIsolates") {
         IsolateNameServer.lookupPortByName(portName)?.send(allIsolateIds);
       }
-      // }
+      if (op == "stopIsolate") {
+        _stopIsolate(id);
+      }
     });
 
     // register so that any Isolate can talk to us
@@ -35,23 +39,29 @@ class WorkerIsolateManager {
     return _singleton;
   }
 
-  void addIsolate(Isolate isolate) {
-    _isolates.add(isolate);
+  void _addIsolate(Isolate isolate) {
+    final id = idCounter;
+    _isolates["$id"] = isolate;
+    print("add iso:[$id]$isolate");
   }
 
-  void stopIsolate(String id) {
-    final isolate = _isolates.firstWhereOrNull((element) => element.debugName == id);
+  void _stopIsolate(String id) {
+    final isolate = _isolates[id];
     if (isolate != null) {
+      print("stopping isolate:$id");
       isolate.kill(priority: Isolate.immediate);
       _isolates.remove(isolate);
+    } else {
+      log("isolate to stop not found:$id");
     }
   }
 
-  List<String> get allIsolateIds => _isolates.map((e) => e.debugName ?? '-1').toList();
+  List<String> get allIsolateIds => _isolates.keys.toList();
 
-  void request(String replPortName, String op) {
+  /// helper method to send a request via a SendPort to whichever Isolate the WorkManager is running in
+  void request(String replyPortName, String op, String arg) {
     final port = IsolateNameServer.lookupPortByName(workerManagerPortName);
-    port?.send("$replPortName:$op");
+    port?.send("$replyPortName:$op:$arg");
   }
 }
 
@@ -59,7 +69,7 @@ Future<void> runApolloIsolateJob(ScriptRequestData d) async {
   final onErrorHandler = ReceivePort();
 
   onErrorHandler.forEach((mesg) {
-    Log.e("[runApolloIsolateJob] isolate [${d.pid}] crashed with $mesg");
+    print("[runApolloIsolateJob] isolate [${d.pid}] crashed with $mesg");
     // let the job manager know:
     IsolateNameServer.lookupPortByName(userJobPortName)?.send("${d.pid}:ERROR");
   });
@@ -70,7 +80,8 @@ Future<void> runApolloIsolateJob(ScriptRequestData d) async {
     debugName: d.pid.toString(),
     onError: onErrorHandler.sendPort,
   );
-  WorkerIsolateManager().addIsolate(isolate);
+  
+  WorkerIsolateManager()._addIsolate(isolate);
 }
 
 /// ****************************************************************

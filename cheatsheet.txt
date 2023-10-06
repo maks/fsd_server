@@ -1,0 +1,5 @@
+var a = mgr(); show(a);
+
+b = (x * (x + 1) ~/ 2);
+
+var a = mgr(); for (var b = 0; b < 3; b = b + 1) { show (a[b]);}

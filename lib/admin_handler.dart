@@ -4,30 +4,19 @@ import 'dart:io';
 
 import 'package:bonsai/bonsai.dart';
 import 'package:server/load_maker.dart';
-import 'package:tribbles/tribbles.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 const logtag = "admin_tribble";
 
-LoadMaker? _loadMaker;
+class AdminHandler {
+  LoadMaker? _loadMaker;
 
-Future<Tribble> createAdminTribble(dynamic message) async {
-  final tribble = Tribble(adminFunction);
-  Log.d(logtag, "created admin tribble");
+  AdminHandler(WebSocketSink sink) {
+    sendStatus(sink); //dont await! just start the infinite status sending loop
+  }
 
-  // wait for tribble to be ready
-  await tribble.waitForReady();
-  tribble.sendMessage(message);
-  return tribble;
-}
-
-Future<void> adminFunction(ConnectFn connect, ReplyFn reply) async {
-  Log.init(true); //need to re-init Logging in every new Isolate
-  final s = connect();
-
-  sendStatus(reply); //dont await! just start the infinite status sending loop
-
-  s.listen((message) async {
-    if (message is String && message.startsWith("start:")) {
+  Future<void> command(String message) async {
+    if (message.startsWith("start:")) {
       Log.d(logtag, "recv'd worker start message:$message");
       final int? count = int.tryParse(message.split(":")[1]);
       if (count != null) {
@@ -38,21 +27,21 @@ Future<void> adminFunction(ConnectFn connect, ReplyFn reply) async {
         Log.d(logtag, "INVALID worker start message count:$message");
       }
     }
-  });
-}
+  }
 
-/// send status messages in infinite loop
-Future<void> sendStatus(ReplyFn reply) async {
-  // send status to parent Tribble (Isolate) at 1Hz
-  Log.d(logtag, "entering status loop");
-  while (true) {
-    await Future<void>.delayed(Duration(seconds: 1));
-    final status = Status(
-      completionCount: _loadMaker?.getAndClearCompletionCount() ?? 0,
-      memoryUsage: ProcessInfo.currentRss,
-      workerCount: _loadMaker?.workerCount ?? 0,
-    );
-    reply(status.toJson());
+  /// send status messages in infinite loop
+  Future<void> sendStatus(WebSocketSink sink) async {
+    // send status to parent Tribble (Isolate) at 1Hz
+    Log.d(logtag, "entering status loop");
+    while (true) {
+      await Future<void>.delayed(Duration(seconds: 1));
+      final status = Status(
+        completionCount: _loadMaker?.getAndClearCompletionCount() ?? 0,
+        memoryUsage: ProcessInfo.currentRss,
+        workerCount: _loadMaker?.workerCount ?? 0,
+      );
+      sink.add(status.toJson());
+    }
   }
 }
 

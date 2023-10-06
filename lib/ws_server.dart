@@ -8,10 +8,9 @@ import 'package:server/apollo_repl.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_static/shelf_static.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
-import 'package:tribbles/tribbles.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import 'package:server/admin_tribble.dart';
+import 'package:server/admin_handler.dart';
 import 'package:server/isolate_worker.dart';
 import 'package:server/port_names.dart';
 
@@ -53,7 +52,7 @@ Future<void> wsServe() async {
 
     webSocket.stream.listen((message) async {
       Log.d(logtag, 'Received user WS message: $message');
-      final chunk = await File("scripts/calc.dart").readAsString();
+      final chunk = await File("scripts/calc.dartscript").readAsString();
       final userReqInput = int.parse(message as String);
       final ScriptRequestData data = (
         pid: _userRequestIdCounter,
@@ -75,23 +74,15 @@ Future<void> wsServe() async {
     });
   });
 
-  Tribble? adminTribble;
+  AdminHandler? adminHandler;
   final adminWSHandler = webSocketHandler((WebSocketChannel webSocket) async {
     Log.i(logtag, "new Admin WS connection");
 
+    adminHandler ??= AdminHandler(webSocket.sink);
+
     webSocket.stream.listen((message) async {
       Log.d(logtag, 'Received WS message: $message');
-      adminTribble?.sendMessage(message);
-    });
-
-    // create new admin tribble if one doesn't yet exist
-    adminTribble ??= await createAdminTribble("start");
-
-    adminTribble!.messages.listen((dynamic m) {
-      // messages from the admin tribble get sent straight out to the websocket
-      // where admin clients are connected
-      webSocket.sink.add(m);
-      // Log.d(logtag, "sent update:$m");
+      adminHandler?.command("$message");
     });
   });
 
@@ -99,7 +90,7 @@ Future<void> wsServe() async {
     Log.i(logtag, "new REPL WS connection");
 
     // create new REPL if one doesn't yet exist
-    webSocket.sink.add('ApolloVM Ctrl-d to exit\n');
+    webSocket.sink.add('Dart ApolloVM\n');
 
     ApolloVMRepl(
       webSocket.stream.map((e) => e.toString()),

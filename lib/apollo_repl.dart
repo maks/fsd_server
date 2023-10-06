@@ -1,6 +1,11 @@
+import 'dart:isolate';
 import 'dart:math';
 
 import 'package:apollovm/apollovm.dart';
+import 'package:isolate_name_server/isolate_name_server.dart';
+
+import 'isolate_worker.dart';
+import 'port_names.dart';
 
 typedef LuaReplPrintOutput = void Function(String);
 
@@ -12,9 +17,14 @@ class ApolloVMRepl {
   bool debugLogging;
   bool showPrompt;
 
+  final _recvPort = ReceivePort();
+  late final Stream<dynamic> _mailbox = _recvPort.asBroadcastStream();
+
   late final ApolloRunner? dartRunner = vm.createRunner('dart');
 
-  ApolloVMRepl(this.input, this.output, {this.debugLogging = false, this.showPrompt = true});
+  ApolloVMRepl(this.input, this.output, {this.debugLogging = false, this.showPrompt = true}) {
+    IsolateNameServer.registerPortWithName(_recvPort.sendPort, replPortName);
+  }
 
   Future<void> repl() async {
     if (showPrompt) {
@@ -49,11 +59,15 @@ class ApolloVMRepl {
         // ======= Functions exposed to ApolloVM ====================================
         // map the `print` function in the VM:
         runner.externalPrintFunction = (o) => print("» $o");
-        // map a async functions to VM
+        // map functions to VM
         runner.externalFunctionMapper
             ?.mapExternalFunction1(ASTTypeVoid.instance, 'sleep', ASTTypeObject.instance, 'o', (o) => _sleep(o as int));
         runner.externalFunctionMapper?.mapExternalFunction1(
-            ASTTypeVoid.instance, 'show', ASTTypeObject.instance, 'o', (o) => output(o as String));
+            ASTTypeVoid.instance, 'show', ASTTypeObject.instance, 'o', (o) => _safeOutput(o));
+        runner.externalFunctionMapper?.mapExternalFunction0(ASTTypeArray.instanceOfString, 'mgr', () => _isoList());    
+        runner.externalFunctionMapper?.mapExternalFunction1(
+            ASTTypeVoid.instance, 'stop', ASTTypeObject.instance, 'o', (o) => _stopIsolate(o as String));
+        
 
         var astValue = await runner.tryExecuteFunction(
           '',
@@ -78,19 +92,20 @@ class ApolloVMRepl {
 
   void debugPrint(String s) => debugLogging ? output(s) : null;
 
-  // Future<bool> loadLineAsExpression(String line) async {
-  //   late final ThreadStatus? status;
-  //   bool result = false;
-  //   try {
-  //     status = await ls.loadString("return $line\n");
-  //     if (status != ThreadStatus.luaOk) {
-  //       debugPrint("error with exp: $status");
-  //     } else {
-  //       result = true;
-  //     }
-  //   } catch (e, _) {
-  //     debugPrint("load exception: $e");
-  //   }
-  //   return result;
-  // }
+  void _safeOutput(dynamic o) => output("$o");
+  
+  Future<List<String>> _isoList() async {
+    List<String> psList = []; // = ["test1", "test2", "test3", "test4"];
+    WorkerIsolateManager().request(replPortName, "listIsolates", "");
+    final mesg = await _mailbox.first;
+    if (mesg is List<String>) {
+      psList = mesg;
+    }
+    return psList;
+  }
+
+  void _stopIsolate(String id) {
+    WorkerIsolateManager().request(replPortName, "stopIsolate", id);
+  }
+
 }

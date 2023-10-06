@@ -269,7 +269,7 @@ class ReplView extends StatefulWidget {
 }
 
 class _ReplViewState extends State<ReplView> with AutomaticKeepAliveClientMixin<ReplView> {
-  String _replPaper = ">REPL\n";
+  String _replPaper = "";
   FocusNode textInputFocusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
 

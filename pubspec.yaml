@@ -20,8 +20,6 @@ dependencies:
   shelf: ^1.4.1
   shelf_static: ^1.1.2
   shelf_web_socket: ^1.0.4
-  tribbles:
-    path: ../tribbles
   web_socket_channel: ^2.4.0
 
 dev_dependencies:
