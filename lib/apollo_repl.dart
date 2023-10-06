@@ -95,7 +95,7 @@ class ApolloVMRepl {
   void _safeOutput(dynamic o) => output("$o");
   
   Future<List<String>> _isoList() async {
-    List<String> psList = []; // = ["test1", "test2", "test3", "test4"];
+    List<String> psList = [];
     WorkerIsolateManager().request(replPortName, "listIsolates", "");
     final mesg = await _mailbox.first;
     if (mesg is List<String>) {

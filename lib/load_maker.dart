@@ -39,7 +39,7 @@ class LoadMaker {
     // register port so that worker isolates can look it up when they need to report their completion result
     IsolateNameServer.registerPortWithName(rp.sendPort, portName);
 
-    final script = File("scripts/calc.dartscript").readAsStringSync();
+    final script = File("scripts/calc.dart").readAsStringSync();
 
     for (int i = 0; i < workerCount; i++) {
       final ScriptRequestData data = (

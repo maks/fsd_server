@@ -40,17 +40,21 @@ class WorkerIsolateManager {
   }
 
   void _addIsolate(Isolate isolate) {
-    final id = idCounter;
-    _isolates["$id"] = isolate;
-    print("add iso:[$id]$isolate");
+    final pid = isolate.debugName ?? "$idCounter";
+    _isolates[pid] = isolate;
+  }
+
+  void _removeIsolate(String id) {
+    _isolates.remove(id);
+    print("removed finished isolate: $id");
   }
 
   void _stopIsolate(String id) {
     final isolate = _isolates[id];
     if (isolate != null) {
       print("stopping isolate:$id");
-      isolate.kill(priority: Isolate.immediate);
-      _isolates.remove(isolate);
+      isolate.kill(priority: Isolate.beforeNextEvent);
+      _isolates.remove(id);
     } else {
       log("isolate to stop not found:$id");
     }
@@ -67,28 +71,42 @@ class WorkerIsolateManager {
 
 Future<void> runApolloIsolateJob(ScriptRequestData d) async {
   final onErrorHandler = ReceivePort();
+  final onExitHandler = ReceivePort();
 
   onErrorHandler.forEach((mesg) {
-    print("[runApolloIsolateJob] isolate [${d.pid}] crashed with $mesg");
+    print("[runApolloIsolateJob] isolate [${Isolate.current.debugName}] crashed with: $mesg");
     // let the job manager know:
     IsolateNameServer.lookupPortByName(userJobPortName)?.send("${d.pid}:ERROR");
   });
 
+  onExitHandler.forEach((mesg) {
+    final pid = mesg as String?;
+    print("[runApolloIsolateJob] isolate [$pid] finished");
+    // remove from isolates list
+    if (pid != null) {
+      WorkerIsolateManager()._removeIsolate(pid);
+      IsolateNameServer.lookupPortByName(userJobPortName)?.send("${d.pid}:ERROR");
+    }
+  });
+  
+  final pid = WorkerIsolateManager.idCounter;
   final isolate = await Isolate.spawn<ScriptRequestData>(
     _apolloIsolateJobFunction,
     d,
-    debugName: d.pid.toString(),
+    debugName: "$pid",
     onError: onErrorHandler.sendPort,
+    errorsAreFatal: true,
+    paused: true,
   );
-  
+  isolate.addOnExitListener(onExitHandler.sendPort, response: "$pid");  
   WorkerIsolateManager()._addIsolate(isolate);
+  isolate.resume(isolate.pauseCapability!);
 }
 
 /// ****************************************************************
 /// **Entry point** for a newly spawned Isolate running a ApolloVM script
 /// ****************************************************************
 void _apolloIsolateJobFunction(ScriptRequestData data) async {
-  // final output = IsolateNameServer.lookupPortByName(userJobPortName);
   final output = IsolateNameServer.lookupPortByName(data.outputPortName);
   if (output == null) {
     throw Exception("missing user_service Port name");
@@ -101,7 +119,6 @@ void _apolloIsolateJobFunction(ScriptRequestData data) async {
     sendFn: (d) {
       // prefix the sent data with "<pid>:" to identify it to the
       output.send("${data.pid}:$d");
-      // print("SENDING=>${data.pid}:$d");
     },
   ).run(data.input);
 }

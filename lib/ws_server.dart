@@ -14,7 +14,6 @@ import 'package:server/admin_handler.dart';
 import 'package:server/isolate_worker.dart';
 import 'package:server/port_names.dart';
 
-
 int _userRequestIdCounter = 0;
 Map<int, ({int req, String sum})> _userRequestsById = {};
 
@@ -41,7 +40,11 @@ Future<void> wsServe() async {
       final id = int.tryParse(mesg[0]);
       final result = mesg[1];
       if (id != null && mesg.length == 2) {
-        _userRequestsById[id] = (req: _userRequestsById[id]!.req, sum: result);
+        // only update the "sum" result string if we haven't sent a sum before,
+        // ie. its still in the "calculating" state
+        if (_userRequestsById[id]?.sum == "calculating...") {
+          _userRequestsById[id] = (req: _userRequestsById[id]!.req, sum: result);
+        }
         Log.d(logtag, "sent: [$id]:${mesg[1]}");
       } else {
         Log.e(logtag, "invalid user response id:$mesg[0]");
@@ -52,7 +55,7 @@ Future<void> wsServe() async {
 
     webSocket.stream.listen((message) async {
       Log.d(logtag, 'Received user WS message: $message');
-      final chunk = await File("scripts/calc.dartscript").readAsString();
+      final chunk = await File("scripts/calc.dart").readAsString();
       final userReqInput = int.parse(message as String);
       final ScriptRequestData data = (
         pid: _userRequestIdCounter,
@@ -91,7 +94,7 @@ Future<void> wsServe() async {
 
     // create new REPL if one doesn't yet exist
     webSocket.sink.add('Dart ApolloVM\n');
-
+    print("new ApolloVM REPL on $webSocket");
     ApolloVMRepl(
       webSocket.stream.map((e) => e.toString()),
       (String s) => webSocket.sink.add(s),
