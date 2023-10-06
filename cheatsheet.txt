@@ -1,4 +1,7 @@
-var a = mgr(); show(a);
+var a = ps(); show(a);
 
 return (sumTo * (sumTo + 1) / 2);
 
+for(int i = 0;i < 300;i = i + 1) { int a = i * 2; }
+
+psload(10);

@@ -64,15 +64,18 @@ class ApolloVMRepl {
             ?.mapExternalFunction1(ASTTypeVoid.instance, 'sleep', ASTTypeObject.instance, 'o', (o) => _sleep(o as int));
         runner.externalFunctionMapper?.mapExternalFunction1(
             ASTTypeVoid.instance, 'show', ASTTypeObject.instance, 'o', (o) => _safeOutput(o));
-        runner.externalFunctionMapper?.mapExternalFunction0(ASTTypeArray.instanceOfString, 'mgr', () => _isoList());    
+        runner.externalFunctionMapper?.mapExternalFunction0(ASTTypeArray.instanceOfString, 'ps', () => _isoList());    
         runner.externalFunctionMapper?.mapExternalFunction1(
             ASTTypeVoid.instance, 'stop', ASTTypeObject.instance, 'o', (o) => _stopIsolate(o as String));
+        runner.externalFunctionMapper?.mapExternalFunction1(
+            ASTTypeVoid.instance, 'psload', ASTTypeObject.instance, 'o', (o) => _psByLoad(o as int));
         
 
         var astValue = await runner.tryExecuteFunction(
           '',
           fnName,
         );
+
         final result = astValue?.getValueNoContext();
         if (result != null) {
           output("$result");
@@ -108,4 +111,14 @@ class ApolloVMRepl {
     WorkerIsolateManager().request(replPortName, "stopIsolate", id);
   }
 
+  void _psByLoad(int count) {
+    for (int pid = 0; pid < count; pid++) {
+      final workerPort = IsolateNameServer.lookupPortByName("$pid");
+      if (workerPort == null) {
+        output("missing user_service Port name");
+      } else {
+        workerPort.send("getOpsCount");
+      }
+    }
+  }
 }

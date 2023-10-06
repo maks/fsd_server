@@ -92,6 +92,15 @@ Future<void> wsServe() async {
   final replWSHandler = webSocketHandler((WebSocketChannel webSocket) async {
     Log.i(logtag, "new REPL WS connection");
 
+    ReceivePort rp = ReceivePort();
+    // register port so that job isolates can look it up when they need to report their completion result
+    IsolateNameServer.registerPortWithName(rp.sendPort, replWSOUTPortName);
+
+    // listen for results to user calc job requests coming from user job Isolates
+    rp.listen((message) {
+      webSocket.sink.add("$message");
+    });  
+
     // create new REPL if one doesn't yet exist
     webSocket.sink.add('Dart ApolloVM\n');
     print("new ApolloVM REPL on $webSocket");

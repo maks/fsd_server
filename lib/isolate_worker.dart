@@ -1,6 +1,6 @@
-import 'dart:async';
 import 'dart:isolate';
 
+import 'package:apollovm/apollovm.dart';
 import 'package:bonsai/bonsai.dart';
 import 'package:isolate_name_server/isolate_name_server.dart';
 import 'package:server/port_names.dart';
@@ -114,11 +114,22 @@ void _apolloIsolateJobFunction(ScriptRequestData data) async {
 
   // we give the script worker a send function that just immediately sends the data
   // out to the output send port for user jobs to report their "return values"
-  await ApolloWorker(
+  final worker = ApolloWorker(
     chunk: data.scriptChunk,
     sendFn: (d) {
       // prefix the sent data with "<pid>:" to identify it to the
       output.send("${data.pid}:$d");
     },
-  ).run(data.input);
+  );
+
+  final rp = ReceivePort();
+  IsolateNameServer.registerPortWithName(rp.sendPort, "${data.pid}");
+
+  rp.listen((message) {
+    final mesg = "[${data.pid}] OPCOUNT:${VMContext.opCount}";
+    final output = IsolateNameServer.lookupPortByName(replWSOUTPortName);
+    output?.send(mesg);
+  });
+
+  await worker.run(data.input);
 }
